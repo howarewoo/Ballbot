@@ -14,11 +14,12 @@
 #include "PID_v1.h"
 #include "Wire.h"
 
-
 #define ROBOT_HEIGHT 31 //inches
 #define WHEEL_RADIUS 1.625
 #define MAX_SPEED 4000 //steps per second
+int MAX_ANGLE = 180; //steps per second
 int sampleRate =  1000; //milliseconds
+bool printFlag = false;
 
 #define DIR1 7
 #define STEP1 8
@@ -35,14 +36,14 @@ AccelStepper stepper3(1, DIR3, STEP3);
 double CurrentAngleX, OutputSpeedX, DesiredAngleX = 0;
 double CurrentAngleY, OutputSpeedY, DesiredAngleY = 0;
 double CurrentAngleZ, OutputSpeedZ, DesiredAngleZ = 0;
-double Kp_x=800, Kp_y=800, Kp_z=800;
-double Ki_x=0.2, Ki_y=0.2, Ki_z=0.2;
-double Kd_x=100, Kd_y=100, Kd_z=100;
+double Kp_x=1, Kp_y=1, Kp_z=1;
+double Ki_x=0, Ki_y=0, Ki_z=0;
+double Kd_x=1, Kd_y=1, Kd_z=1;
 
 //Specify the links and initial tuning parameters
-PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, P_ON_M, DIRECT);
-PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kp_y, Ki_y, Kd_y, P_ON_M, DIRECT);
-PID zPID(&CurrentAngleZ, &OutputSpeedZ, &DesiredAngleZ, Kp_z, Ki_z, Kd_z, P_ON_M, DIRECT);
+PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, DIRECT);
+PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kp_y, Ki_y, Kd_y, DIRECT);
+PID zPID(&CurrentAngleZ, &OutputSpeedZ, &DesiredAngleZ, Kp_z, Ki_z, Kd_z, DIRECT);
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
@@ -239,8 +240,6 @@ uint32_t Now = 0;                                 // used to calculate integrati
 float q[4] = {1.0f, 0.0f, 0.0f, 0.0f};            // vector to hold quaternion
 
 
-
-
 void setupIMU(){
   Wire.begin();
   Serial.begin(38400);
@@ -281,7 +280,7 @@ void setupIMU(){
   }
 }
 
-void readIMU() {
+void readIMU(){
   timerstart = millis();
   // If data ready bit set, all data registers have new data
   if(readByte(MPU6050_ADDRESS, INT_STATUS) & 0x01) {  // check if data ready interrupt
@@ -318,6 +317,7 @@ void readIMU() {
   // Serial print and/or display at 0.5 s rate independent of data rates
   delt_t = millis() - count;
   if (delt_t > 500) { // update LCD once per half-second independent of read rate
+    printFlag = true;
     digitalWrite(blinkPin, blinkOn);
     /*
     Serial.print("ax = "); Serial.print((int)1000*ax);
@@ -361,83 +361,7 @@ void readIMU() {
   timerend = millis();
 }
 
-void setupStepper(){
-  stepper1.setMaxSpeed(MAX_SPEED);
-  stepper2.setMaxSpeed(MAX_SPEED);
-  stepper3.setMaxSpeed(MAX_SPEED);
-}
-
-void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
-  stepper1.setSpeed(steps_sec1);
-  stepper2.setSpeed(steps_sec2);
-  stepper3.setSpeed(steps_sec3);
-  stepper1.runSpeed();
-  stepper2.runSpeed();
-  stepper3.runSpeed();
-}
-
-void speedCalculations(){
-  speed1 = ((OutputSpeedX/2)+(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
-  speed2 = ((OutputSpeedX/2)-(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
-  speed3 = (OutputSpeedX+OutputSpeedZ)/WHEEL_RADIUS;
-}
-
-void setupPID(){
-  xPID.SetSampleTime(10); //10 milli is 100hz
-  yPID.SetSampleTime(10);
-  zPID.SetSampleTime(10);
-  xPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  yPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  zPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  xPID.SetMode(AUTOMATIC);
-  yPID.SetMode(AUTOMATIC);
-  zPID.SetMode(AUTOMATIC);
-}
-
-void setup(){
-  Wire.begin();
-  // TWBR = 12;  // 400 kbit/sec I2C speed
-  Serial.begin(38400);
-  // Set up the interrupt pin, its set as active high, push-pull
-  pinMode(Pin, INPUT);
-  digitalWrite(Pin, LOW);
-
-  setupIMU();
-  setupStepper();
-  setupPID();
-}
-
-void loop(){
-//  timerstart = millis();
-//  Serial.print("timerstart: ");
-//  Serial.print(timerstart);
-  readIMU();
-//  timer = timerend - timerstart;
-//      Serial.print("timer: ");
-//    Serial.println(timer);
-  xPID.Compute();
-  yPID.Compute();
-  zPID.Compute();
-  Serial.print("X-speed: "); Serial.print(OutputSpeedX);
-  Serial.print("Y-speed: "); Serial.print(OutputSpeedY);
-  Serial.print("Z-speed: "); Serial.println(OutputSpeedZ);
-//  speedCalculations();
-////          Serial.println("test");
-//
-//  while(timer < sampleRate){
-//    runMotors(speed1, speed2, speed3);
-//    timerend = millis();
-////    Serial.print("timerend test: ");
-////    Serial.println(timerend);
-//    timer = millis()-timerstart;
-//          Serial.print("timer: ");
-//    Serial.println(timer);
-//  }
-  
-}
-
-
-void getGres() {
+void getGres(){
   switch (Gscale)
   {
     // Possible gyro scales (and their register bit settings) are:
@@ -458,7 +382,7 @@ void getGres() {
   }
 }
 
-void getAres() {
+void getAres(){
   switch (Ascale)
   {
     // Possible accelerometer scales (and their register bit settings) are:
@@ -479,9 +403,7 @@ void getAres() {
   }
 }
 
-
-void readAccelData(int16_t * destination)
-{
+void readAccelData(int16_t * destination){
   uint8_t rawData[6];  // x/y/z accel register data stored here
   readBytes(MPU6050_ADDRESS, ACCEL_XOUT_H, 6, &rawData[0]);  // Read the six raw data registers into data array
   destination[0] = (int16_t)((rawData[0] << 8) | rawData[1]) ;  // Turn the MSB and LSB into a signed 16-bit value
@@ -489,8 +411,7 @@ void readAccelData(int16_t * destination)
   destination[2] = (int16_t)((rawData[4] << 8) | rawData[5]) ;
 }
 
-void readGyroData(int16_t * destination)
-{
+void readGyroData(int16_t * destination){
   uint8_t rawData[6];  // x/y/z gyro register data stored here
   readBytes(MPU6050_ADDRESS, GYRO_XOUT_H, 6, &rawData[0]);  // Read the six raw data registers sequentially into data array
   destination[0] = (int16_t)((rawData[0] << 8) | rawData[1]) ;  // Turn the MSB and LSB into a signed 16-bit value
@@ -498,18 +419,14 @@ void readGyroData(int16_t * destination)
   destination[2] = (int16_t)((rawData[4] << 8) | rawData[5]) ;
 }
 
-int16_t readTempData()
-{
+int16_t readTempData(){
   uint8_t rawData[2];  // x/y/z gyro register data stored here
   readBytes(MPU6050_ADDRESS, TEMP_OUT_H, 2, &rawData[0]);  // Read the two raw data registers sequentially into data array
   return ((int16_t)rawData[0]) << 8 | rawData[1] ;  // Turn the MSB and LSB into a 16-bit value
 }
 
-
-
 // Configure the motion detection control for low power accelerometer mode
-void LowPowerAccelOnlyMPU6050()
-{
+void LowPowerAccelOnlyMPU6050(){
 
   // The sensor has a high-pass filter necessary to invoke to allow the sensor motion detection algorithms work properly
   // Motion detection occurs on free-fall (acceleration below a threshold for some time for all axes), motion (acceleration
@@ -559,9 +476,7 @@ void LowPowerAccelOnlyMPU6050()
 
 }
 
-
-void initMPU6050()
-{
+void initMPU6050(){
   // wake up device-don't need this here if using calibration function below
   //  writeByte(MPU6050_ADDRESS, PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors
   //  delay(100); // Delay 100 ms for PLL to get established on x-axis gyro; should check for PLL ready interrupt
@@ -600,8 +515,7 @@ void initMPU6050()
 
 // Function which accumulates gyro and accelerometer data after device initialization. It calculates the average
 // of the at-rest readings and then loads the resulting offsets into accelerometer and gyro bias registers.
-void calibrateMPU6050(float * dest1, float * dest2)
-{
+void calibrateMPU6050(float * dest1, float * dest2){
   uint8_t data[12]; // data array to hold accelerometer and gyro x, y, z, data
   uint16_t ii, packet_count, fifo_count;
   int32_t gyro_bias[3] = {0, 0, 0}, accel_bias[3] = {0, 0, 0};
@@ -743,10 +657,9 @@ void calibrateMPU6050(float * dest1, float * dest2)
   dest2[2] = (float)accel_bias[2]/(float)accelsensitivity;
 }
 
-
 // Accelerometer and gyroscope self test; check calibration wrt factory settings
-void MPU6050SelfTest(float * destination) // Should return percent deviation from factory trim values, +/- 14 or less deviation is a pass
-{
+void MPU6050SelfTest(float * destination){
+  // Should return percent deviation from factory trim values, +/- 14 or less deviation is a pass
   uint8_t rawData[4];
   uint8_t selfTest[6];
   float factoryTrim[6];
@@ -786,19 +699,16 @@ void MPU6050SelfTest(float * destination) // Should return percent deviation fro
   for (int i = 0; i < 6; i++) {
     destination[i] = 100.0 + 100.0*((float)selfTest[i] - factoryTrim[i])/factoryTrim[i]; // Report percent differences
   }
-
 }
 
-void writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
-{
+void writeByte(uint8_t address, uint8_t subAddress, uint8_t data){
   Wire.beginTransmission(address);  // Initialize the Tx buffer
   Wire.write(subAddress);           // Put slave register address in Tx buffer
   Wire.write(data);                 // Put data in Tx buffer
   Wire.endTransmission();           // Send the Tx buffer
 }
 
-uint8_t readByte(uint8_t address, uint8_t subAddress)
-{
+uint8_t readByte(uint8_t address, uint8_t subAddress){
   uint8_t data; // `data` will store the register data
   Wire.beginTransmission(address);         // Initialize the Tx buffer
   Wire.write(subAddress);                  // Put slave register address in Tx buffer
@@ -808,13 +718,110 @@ uint8_t readByte(uint8_t address, uint8_t subAddress)
   return data;                             // Return data read from slave register
 }
 
-void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest)
-{
+void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest){
   Wire.beginTransmission(address);   // Initialize the Tx buffer
   Wire.write(subAddress);            // Put slave register address in Tx buffer
   Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
   uint8_t i = 0;
   Wire.requestFrom(address, count);  // Read bytes from slave register address
   while (Wire.available()) {
-    dest[i++] = Wire.read(); }         // Put read results in the Rx buffer
+    dest[i++] = Wire.read();
+  }         // Put read results in the Rx buffer
+}
+
+void setupStepper(){
+  stepper1.setMaxSpeed(MAX_SPEED);
+  stepper2.setMaxSpeed(MAX_SPEED);
+  stepper3.setMaxSpeed(MAX_SPEED);
+}
+
+void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
+  stepper1.setSpeed(steps_sec1);
+  stepper2.setSpeed(steps_sec2);
+  stepper3.setSpeed(steps_sec3);
+  stepper1.runSpeed();
+  stepper2.runSpeed();
+  stepper3.runSpeed();
+}
+
+void speedCalculations(){
+  if (pitch < 0){
+    OutputSpeedX = -OutputSpeedX
   }
+  if (roll < 0){
+    OutputSpeedY = -OutputSpeedY
+  }
+  // if (yaw < 0){
+  //   OutputSpeedZ = -OutputSpeedZ
+  // }
+  speed1 = ((OutputSpeedX/2)+(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
+  speed2 = ((OutputSpeedX/2)-(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
+  speed3 = (OutputSpeedX+OutputSpeedZ)/WHEEL_RADIUS;
+}
+
+void setupPID(){
+  // xPID.SetSampleTime(10); //10 milli is 100hz
+  // yPID.SetSampleTime(10);
+  // zPID.SetSampleTime(10);
+  // xPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  // yPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  // zPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  xPID.SetMode(AUTOMATIC);
+  yPID.SetMode(AUTOMATIC);
+  zPID.SetMode(AUTOMATIC);
+}
+
+void setup(){
+  Wire.begin();
+  // TWBR = 12;  // 400 kbit/sec I2C speed
+  Serial.begin(38400);
+  // Set up the interrupt pin, its set as active high, push-pull
+  pinMode(Pin, INPUT);
+  digitalWrite(Pin, LOW);
+
+  setupIMU();
+  setupStepper();
+  setupPID();
+}
+
+void loop(){
+  //  timerstart = millis();
+  //  Serial.print("timerstart: ");
+  //  Serial.print(timerstart);
+  readIMU();
+  //  timer = timerend - timerstart;
+  //      Serial.print("timer: ");
+  //    Serial.println(timer);
+  //  double mapx = map(pitch,-MAX_ANGLE, MAX_ANGLE, -255, 255);
+  CurrentAngleX = (double)-abs(pitch);
+  CurrentAngleY = (double)-abs(roll);
+  CurrentAngleZ = (double)-abs(yaw);
+  xPID.Compute();
+  yPID.Compute();
+  zPID.Compute();
+  speedCalculations();
+  if (printFlag == true){
+    Serial.print("X-angle: "); Serial.print(CurrentAngleX);
+    Serial.print(" X-speed: "); Serial.println(OutputSpeedX);
+    Serial.print("Y-angle: "); Serial.print(CurrentAngleY);
+    Serial.print(" Y-speed: "); Serial.println(OutputSpeedY);
+    Serial.print("Z-angle: "); Serial.print(CurrentAngleZ);
+    Serial.print(" Z-speed: "); Serial.println(OutputSpeedZ);
+
+    Serial.print("Motor 1 Speed: "); Serial.println(speed1);
+    Serial.print("Motor 2 Speed: "); Serial.println(speed2);
+    Serial.print("Motor 3 Speed: "); Serial.println(speed3);
+  }
+  //          Serial.println("test");
+  //
+  //  while(timer < sampleRate){
+  //    runMotors(speed1, speed2, speed3);
+  //    timerend = millis();
+  ////    Serial.print("timerend test: ");
+  ////    Serial.println(timerend);
+  //    timer = millis()-timerstart;
+  //          Serial.print("timer: ");
+  //    Serial.println(timer);
+  //  }
+  printFlag = false;
+}
