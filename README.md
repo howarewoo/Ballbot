@@ -15,12 +15,13 @@ In essence, a ballbot is an omnidirectional inverted pendulum. This means that t
 
 
 ## Hardware
+
 Here is a list of the selected hardware:
 
 | Component | Part | Description |
 | --- | --- | --- |
-| git status   | git status     | git status    |
-| git diff     | git diff       | git diff      |
+| Microcontroller | Raspberry Pi 3B | Faster processor speed and an extensive community make the Raspberry Pi an ideal choice for the microcontroller over less powerfull options like an Arduino Mega, or a less supported board. |
+| IMU | MPU9250 | The 9 degrees of freedom supported by the MPU9250 allow for accurate angle measurments for a very cheap price. |
 
 ## Building Process
 
