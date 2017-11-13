@@ -16,6 +16,7 @@ In essence, a ballbot is an omnidirectional inverted pendulum. This means that t
 
 ## Hardware
 Here is a list of the selected hardware:
+
 | Component | Part | Description |
 | --- | --- | --- |
 | git status   | git status     | git status    |
