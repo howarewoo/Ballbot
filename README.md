@@ -13,8 +13,7 @@ In essence, a ballbot is an omnidirectional inverted pendulum. This means that t
 1. Implement a 2-dimensional inverted pendulum control for each plane of force, and sum the results.
 2. Find the angle for pitch around the z-axis, solve a 2-dimensional inverted pendulum problem for the plan along that angle, and then calculate the force needed for each point of control.
 
-Matlab was used to
-
+Matlab was used for all of the control system modeling.
 
 ## Hardware
 
@@ -32,7 +31,5 @@ Here is a list of the selected hardware:
 ## Building Process
 
 ## Programming
-
-
 
 ## Results
