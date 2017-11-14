@@ -30,7 +30,6 @@ void setup(){
   pre_ts=millis();
 }
 
-//}
 void loop(){
   if (imu.dataReady()){
     imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
