@@ -1,4 +1,4 @@
-# Ballbot: a Dynamically Stable Omnidirectional Robot
+#Ballbot: a Dynamically Stable Omnidirectional Robot
 
 A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments. The ballbot works on the same principle as that of an inverted pendulum.
 
@@ -6,7 +6,7 @@ A ballbot is a dynamically-stable mobile robot designed to balance on a single s
 
 CAPSTONE project by Adam Woo, Graham Goodwin, and Chloe Desjardins
 
-## Mathematical Modeling
+##Mathematical Modeling
 
 In essence, a ballbot is an omnidirectional inverted pendulum. This means that the problem can be approached in one of two ways.
 
@@ -15,7 +15,7 @@ In essence, a ballbot is an omnidirectional inverted pendulum. This means that t
 
 Matlab was used for all of the control system modeling.
 
-## Hardware
+##Hardware
 
 Here is a list of the selected hardware:
 
@@ -28,8 +28,8 @@ Here is a list of the selected hardware:
 | Motors | 3x Stepper Motors | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
 | Motor Drivers | 3x A4988 Stepper Motor Driver | These drivers allow the stepper motors to be controlled with only two data pins; one for direction and one for speed. |
 
-## Building Process
+##Building Process
 
-## Programming
+##Programming
 
-## Results
+##Results

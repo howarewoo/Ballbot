@@ -3,7 +3,7 @@
 #define SerialPort Serial
 #include <SparkFunMPU9250-DMP.h>
 MPU9250_DMP imu;
-double roll , pitch, yaw;
+double roll, pitch, yaw;
 long int pre_ts=0;
 
 void setup(){
