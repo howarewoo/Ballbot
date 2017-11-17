@@ -1,0 +1,4 @@
+*.o
+*.so
+examples/Basic_I2C/Basic_I2C
+examples/Basic_SPI/Basic_SPI
