@@ -27,16 +27,19 @@ Here is a list of the selected hardware:
 | IMU | MPU9250 | The 9 degrees of freedom supported by the MPU9250 allow for accurate angle measurements for a very cheap price. |
 | Ball | 10" Stainless Steel Mirror Ball w/ Plastidip | A 10" steel ball provides a round ridged surface strong enough to support the robots chassis. The ball is coated in Plastidip, a rubberlike spray that will increase the friction on the ball. |
 | Wheels | 3x Omniwheels | Omniwheels allow for free movement perpendicular to the wheel. This allows for the development of holonomic movement systems. |
-| Motors | 3x Stepper Motors | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
+| Motors | 3x Nema 17 Stepper Motor | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
 | Motor Drivers | 3x A4988 Stepper Motor Driver | These drivers allow the stepper motors to be controlled with only two data pins; one for direction and one for speed. |
 
 ## Building Process
+
+The
+![A4988 Wiring](https://github.com/awoox2/ballbot/raw/master/Images/A4988_wiring.png)
 
 ## Programming
 
 All programming was done in the Atom text editor with the PlatformIO IDE package.
 
-*Libraries*
+**Libraries**
 - SparkFun MPU-9250 9 DOF IMU Breakout by SparkFun Electronics
 - StepperDriver by Laurentiu Badea
 

@@ -2,6 +2,8 @@
 #include "quaternionFilters.h"
 #include "MPU9250.h"
 #include "A4988.h"
+#include "MultiDriver.h"
+#include "SyncDriver.h"
 
 #define MOTOR_STEPS 200
 #define DIR1 7
@@ -10,22 +12,23 @@
 #define STEP2 10
 #define DIR3 11
 #define STEP3 12
+// microstepping pins
 #define MS1 10
 #define MS2 11
 #define MS3 12
 A4988 stepper1(MOTOR_STEPS, DIR1, STEP1, ENABLE, MS1, MS2, MS3);
 A4988 stepper2(MOTOR_STEPS, DIR2, STEP2, ENABLE, MS1, MS2, MS3);
 A4988 stepper3(MOTOR_STEPS, DIR3, STEP3, ENABLE, MS1, MS2, MS3);
+SyncDriver controller(stepper1, stepper2, stepper3);
+
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
 MPU9250 myIMU;
 
-
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 
-
-void setup() {
+void setupIMU(){
   Wire.begin();
   // TWBR = 12;  // 400 kbit/sec I2C speed
   Serial.begin(38400);
@@ -97,6 +100,35 @@ void setup() {
     while(1) ; // Loop forever if communication doesn't happen
   }
 }
+
+void setupStepper(){
+  stepper1.begin(RPM);
+  stepper2.begin(RPM);
+  stepper3.begin(RPM);
+  stepper1.enable();
+  stepper2.enable();
+  stepper3.enable();
+  stepper1.setMicrostep(1);  // Set microstep mode to 1:1
+  stepper2.setMicrostep(1);  // Set microstep mode to 1:1
+  stepper3.setMicrostep(1);  // Set microstep mode to 1:1
+}
+
+float calculations(){
+
+}
+
+
+void setup(){
+
+  setupIMU();
+  setupStepper();
+
+}
+
+
+// NEED TO USE "stepper#.setRPM(#)" to change speed of motor
+
+
 
 void loop() {
   // If intPin goes high, all data registers have new data
