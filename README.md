@@ -1,6 +1,6 @@
 # Ballbot: a Dynamically Stable Omnidirectional Robot
 
-### Under Construction
+*Under Construction*
 
 A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments. The ballbot works on the same principle as that of an inverted pendulum.
 
@@ -33,5 +33,11 @@ Here is a list of the selected hardware:
 ## Building Process
 
 ## Programming
+
+All programming was done in the Atom text editor with the PlatformIO IDE package.
+
+*Libraries*
+- SparkFun MPU-9250 9 DOF IMU Breakout by SparkFun Electronics
+- StepperDriver by Laurentiu Badea
 
 ## Results
