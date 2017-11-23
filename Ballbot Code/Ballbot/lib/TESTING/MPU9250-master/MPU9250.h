@@ -1,30 +1,32 @@
 /*
-   MPU9250.h : Header for Raspberry Pi MPU9250 library
+MPU9250.h
+Brian R Taylor
+brian.taylor@bolderflight.com
 
-   Copyright (c) Simon D. Levy 2016
+Copyright (c) 2016 Bolder Flight Systems
 
-   Adapted from https://github.com/bolderflight/MPU9250/blob/master/MPU9250.cpp
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+and associated documentation files (the "Software"), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-   and associated documentation files (the "Software"), to deal in the Software without restriction, 
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-   sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
-   furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
 
-   The above copyright notice and this permission notice shall be included in all copies or 
-   substantial portions of the Software.
-
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
-   BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
-   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-#include <stdint.h>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 #ifndef MPU9250_h
 #define MPU9250_h
+
+#include "Arduino.h"
+#include "i2c_t3.h"  // I2C library
+#include "SPI.h"     // SPI library
 
 enum mpu9250_gyro_range
 {
@@ -54,10 +56,22 @@ enum mpu9250_dlpf_bandwidth
 
 class MPU9250{
     public:
-        MPU9250(uint8_t i2c_address);
-        MPU9250(uint8_t bus, uint32_t speed); // SPI
+        MPU9250();
+        MPU9250(uint8_t address, uint8_t bus);
+        MPU9250(uint8_t address, uint8_t bus, i2c_pins pins);
+        MPU9250(uint8_t address, uint8_t bus, i2c_pins pins, i2c_pullup pullups);
+        MPU9250(uint8_t csPin);
+        MPU9250(uint8_t csPin, SPIClass *Spi);
+
+        void configure(uint8_t address, uint8_t bus);
+        void configure(uint8_t address, uint8_t bus, i2c_pins pins);
+        void configure(uint8_t address, uint8_t bus, i2c_pins pins, i2c_pullup pullups);
+        void configure(uint8_t csPin);
+        void configure(uint8_t csPin, SPIClass *Spi);        
+
         int begin(mpu9250_accel_range accelRange, mpu9250_gyro_range gyroRange);
         int setFilt(mpu9250_dlpf_bandwidth bandwidth, uint8_t SRD);
+        int enableInt(bool enable);
         void getAccel(float* ax, float* ay, float* az);
         void getGyro(float* gx, float* gy, float* gz);
         void getMag(float* hx, float* hy, float* hz);
@@ -76,12 +90,15 @@ class MPU9250{
         void getMotion9Counts(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* hx, int16_t* hy, int16_t* hz);
         void getMotion10Counts(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* hx, int16_t* hy, int16_t* hz, int16_t* t);
     private:
-        uint8_t _i2c_address;
-        int8_t _i2c_fd;
-        uint8_t _spi_bus;
-        uint32_t _spi_speed;
+        uint8_t _address;
+        uint8_t _bus;
+        i2c_pins _pins;
+        i2c_pullup _pullups;
         bool _userDefI2C;
+        uint8_t _csPin;
+        SPIClass *_spi;
         bool _useSPI;
+        bool _useSPIHS;
         float _accelScale;
         float _gyroScale;
         float _magScaleX, _magScaleY, _magScaleZ;
@@ -138,6 +155,7 @@ class MPU9250{
 
         const uint8_t INT_PIN_CFG = 0x37;
         const uint8_t INT_ENABLE = 0x38;
+        const uint8_t INT_DISABLE = 0x00;
         const uint8_t INT_PULSE_50US = 0x00;
         const uint8_t INT_RAW_RDY_EN = 0x01;
 

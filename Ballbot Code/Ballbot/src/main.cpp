@@ -1,30 +1,37 @@
-/* Ballbot: Omnidirectional Dynamically Stable Inverted Pendulum
-
-Stationary Balancing Program
-
-Written by Adam Woo, Graham Goodwin, Chloe Desjardine
-
-This program has the main parts:
-1) Reading the IMU
-2)Converting the IMU readings to angles
-3) PID controls to manage veloccities for each motor
-
-Hardware used:
-Arduino Mega
-MPU9250
-
-*/
+// Ballbot: Omnidirectional Dynamically Stable Inverted Pendulum
+//
+// Stationary Balancing Program
+//
+// Written by Adam Woo, Graham Goodwin, Chloe Desjardine
+//
+// This program has the main parts:
+// 1) Reading the IMU
+// 2)Converting the IMU readings to angles
+// 3) PID controls to manage veloccities for each motor
+//
+// Hardware used:
+// Arduino Mega
+// MPU9250
 
 
 //----------------------------------------------------------
 // Include Libraries
 //----------------------------------------------------------
-#include "Arduino.h"
-#include "Wire.h"
-#include "TimerOne.h"
-#include "I2Cdev.h"
-#include "MPU9250.h"
-#include "math.h"
+#include <stdio.h>
+#include <wiringPi.h>
+#include <math.h>
+#include <A4988.h>
+#include <unistd.h>
+#include <time.h>
+#include <MotionSensor.h>
+#include <wiringPiSPI.h>
+#include <SPI.h>
+
+//----------------------------------------------------------
+// MPU settings
+//----------------------------------------------------------
+#define DT 20
+#define G_GAIN 0.07
 
 //----------------------------------------------------------
 // PID Variables
@@ -36,128 +43,121 @@ MPU9250
 #define targetAngle -2.5
 
 //----------------------------------------------------------
-// MPU
+// Pins and motor definitions
 //----------------------------------------------------------
-#define    MPU9250_ADDRESS            0x68
-#define    MAG_ADDRESS                0x0C
-
-#define    GYRO_FULL_SCALE_250_DPS    0x00
-#define    GYRO_FULL_SCALE_500_DPS    0x08
-#define    GYRO_FULL_SCALE_1000_DPS   0x10
-#define    GYRO_FULL_SCALE_2000_DPS   0x18
-
-#define    ACC_FULL_SCALE_2_G        0x00
-#define    ACC_FULL_SCALE_4_G        0x08
-#define    ACC_FULL_SCALE_8_G        0x10
-#define    ACC_FULL_SCALE_16_G       0x18
-
-// Initial time
-long int ti;
-volatile bool intFlag=false;
-
-// This function read Nbytes bytes from I2C device at address Address.
-// Put read bytes starting at register Register in the Data array.
-void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t* Data){
-  // Set register address
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.endTransmission();
-
-  // Read Nbytes
-  Wire.requestFrom(Address, Nbytes);
-  uint8_t index=0;
-  while (Wire.available())
-    Data[index++]=Wire.read();
-}
+#define stepsPerRevolution 400
+#define
 
 
-// Write a byte (Data) in device (Address) at register (Register)
-void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data){
-  // Set register address
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.write(Data);
-  Wire.endTransmission();
-}
+#define stepPin1 3
+#define dirPin1 4
+#define stepPin2 5
+#define dirPin2 6
+#define stepPin3 7
+#define dirPin3 8
+#define MS1 9
+#define MS2 10
+#define MS3 11
 
-// Counter
-long int cpt=0;
+// an MPU9250 object with the MPU-9250 sensor on Teensy Chip Select pin 10
+MPU9250 IMU(10);
+float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
+int beginStatus;
 
-void callback(){
-  intFlag=true;
-  digitalWrite(13, digitalRead(13) ^ 1);
-}
+A4988 motor1(stepsPerRevolution, dirPin1, stepPin1, ENABLE, MS1, MS2, MS3);
+A4988 motor2(stepsPerRevolution, dirPin2, stepPin2, ENABLE, MS1, MS2, MS3);
+A4988 motor3(stepsPerRevolution, dirPin3, stepPin3, ENABLE, MS1, MS2, MS3);
 
-void MPUsetup(){
-  // Set accelerometers low pass filter at 5Hz
-  I2CwriteByte(MPU9250_ADDRESS,29,0x06);
-  // Set gyroscope low pass filter at 5Hz
-  I2CwriteByte(MPU9250_ADDRESS,26,0x06);
+double fallAngle, pitch;
 
-
-  // Configure gyroscope range
-  I2CwriteByte(MPU9250_ADDRESS,27,GYRO_FULL_SCALE_1000_DPS);
-  // Configure accelerometers range
-  I2CwriteByte(MPU9250_ADDRESS,28,ACC_FULL_SCALE_4_G);
-  // Set by pass mode for the magnetometers
-  I2CwriteByte(MPU9250_ADDRESS,0x37,0x02);
-
-  // Request continuous magnetometer measurements in 16 bits
-  I2CwriteByte(MAG_ADDRESS,0x0A,0x16);
-
-   pinMode(13, OUTPUT);
-  Timer1.initialize(10000);         // initialize timer1, and set a 1/2 second period
-  Timer1.attachInterrupt(callback);  // attaches callback() as a timer overflow interrupt
-
-  // Store initial time
-  ti=millis();
-}
-
-/* ----------------------------------------------------------
-                        Motor 1
-                           /\
-                         /    \
-                       /        \
-                     /            \
-                   /                \
-                 /                    \
-               /                        \
-             /                            \
-           /                                \
-          ------------------------------------
-      Motor 2                              Motor 3
-----------------------------------------------------------*/
-const int stepsPerRevolution = 400;
-const int stepPin1 = 3;
-const int dirPin1 = 4;
-const int stepPin2 = 5;
-const int dirPin2 = 6;
-const int stepPin3 = 7;
-const int dirPin3 = 8;
-
-void motorsetup(){
-  // Sets the two pins as Outputs
-  pinMode(stepPin1,OUTPUT);
-  pinMode(dirPin1,OUTPUT);
-  pinMode(stepPin2,OUTPUT);
-  pinMode(dirPin2,OUTPUT);
-  pinMode(stepPin3,OUTPUT);
-  pinMode(dirPin3,OUTPUT);
-  digitalWrite(dirPin1,HIGH); //Enables the motor to move in a particular direction
-  digitalWrite(dirPin2,HIGH); //Enables the motor to move in a particular direction
-  digitalWrite(dirPin3,HIGH); //Enables the motor to move in a particular direction
-}
-
-
-
+//----------------------------------------------------------
+// Setup
+//----------------------------------------------------------
 void setup(){
-  // Arduino initializations
-  Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
+  beginStatus = IMU.begin(ACCEL_RANGE_4G,GYRO_RANGE_250DPS);
+  ms_open();          // Turn on motion sensor
+  stepper.begin(RPM, MICROSTEPS);
 
-  motorsetup();
-  MPUsetup();
+
+
 }
 
+
+
+void readMPU(){
+  if(beginStatus < 0) {
+    delay(1000);
+    Serial.println("IMU initialization unsuccessful");
+    Serial.println("Check IMU wiring or try cycling power");
+    delay(10000);
+  }
+  IMU.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz);
+  // //Convert Gyro raw to degrees per second
+  // rate_gyr_x = (float) gx * G_GAIN;
+  // rate_gyr_y = (float) gy * G_GAIN;
+  // rate_gyr_z = (float) gz * G_GAIN;
+  // //Calculate the angles from the gyro
+  // long DT = endTime-startTime
+  // gyroXangle+=rate_gyr_x*DT;
+  // gyroYangle+=rate_gyr_y*DT;
+  // gyroZangle+=rate_gyr_z*DT;
+  // //Convert Accelerometer values to degrees
+  // AccXangle = (float) (atan2(accRaw[1],accRaw[2])+M_PI)*RAD_TO_DEG;
+  // AccYangle = (float) (atan2(accRaw[2],accRaw[0])+M_PI)*RAD_TO_DEG;
+  // //Complementary Filter
+  // angleX=AA*(CFangleX+rate_gyr_x*DT) +(1 - AA) * AccXangle;
+  // angleY=AA*(CFangleY+rate_gyr_y*DT) +(1 - AA) * AccYangle;
+
+  pitch = 180 * atan (ax/sqrt(ay*ay + az*az))/M_PI;
+  roll  = 180 * atan (ay/sqrt(ax*ax + az*az))/M_PI;
+  yaw   = 180 * atan (az/sqrt(ax*ax + az*az))/M_PI;
+  cos_roll = cos(roll);
+  sin_roll = sin(roll);
+  cos_pitch = cos(pitch);
+  sin_pitch = sin(pitch);
+  mag_x = hx * cos_pitch + (-hy) * sin_roll * sin_pitch + (-hz) * cos_roll * sin_pitch;
+  mag_y = (-hy) * cos_roll - (-hz) * sin_roll;
+  MAG_Heading = atan2(-mag_y, mag_x);
+  serial.print("yaw = %2.1f\tpitch = %2.1f\troll = %2.1f\ttemperature = %2.1f\tcompass = %2.1f, %2.1f, %2.1f\n", yaw, pitch, roll, temp, compass[0], compass[1], compass[2]);
+}
+
+
+//----------------------------------------------------------
+// loop
+//----------------------------------------------------------
 void loop(){
+  while(millis() - startInt < 20)
+  {
+    startInt = millis();
+  }
+  readMPU();
+  calculations();
+  moveStepper();
+
+
+}
+
+calculations(){
+
+}
+
+//----------------------------------------------------------
+// moveStepper
+//----------------------------------------------------------
+void moveStepper(int stepPin, int speedDelay){
+  digitalWrite(stepPin,HIGH);
+  delayMicroseconds(speedDelay);
+  digitalWrite(stepPin,LOW);
+  delayMicroseconds(speedDelay);
+}
+
+
+int main(int argc, char ** argv) {
+
+  setup();
+
+  while (true) {
+    loop();
+  }
 }

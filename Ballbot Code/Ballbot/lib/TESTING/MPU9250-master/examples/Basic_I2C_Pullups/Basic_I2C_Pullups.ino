@@ -1,55 +1,41 @@
 /*
-   Basic_I2C.cpp : Displays basic functionaliy of MPU9250 using I^2 on Raspberry Pi.
+Basic_I2C.ino
+Brian R Taylor
+brian.taylor@bolderflight.com
+2016-10-10 
 
-   Copyright (c) 2016 Simon D. Levy
+Copyright (c) 2016 Bolder Flight Systems
 
-   Adapted from https://github.com/bolderflight/MPU9250/blob/master/examples/Basic_I2C/Basic_I2C.ino
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+and associated documentation files (the "Software"), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
-   and associated documentation files (the "Software"), to deal in the Software without restriction, 
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, 
-   sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
-   furnished to do so, subject to the following conditions:
-   The above copyright notice and this permission notice shall be included in all copies or 
-   substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
-   BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
-   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "MPU9250.h"
-#include <stdio.h>
-#include <wiringPi.h>
 
 // an MPU9250 object with its I2C address 
 // of 0x68 (ADDR to GRND) and on Teensy bus 0
-MPU9250 IMU(0x68);
+// using pins 16 and 17 instead of 18 and 19
+// and internal pullups instead of external.
+MPU9250 IMU(0x68, 0, I2C_PINS_16_17, I2C_PULLUP_INT);
 
 float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
 int beginStatus;
 
-static void printData(){
-
-  // print the data
-  printf("%6.6f\t", ax);
-  printf("%6.6f\t", ay);
-  printf("%6.6f\t", az);
-
-  printf("%6.6f\t", gx);
-  printf("%6.6f\t", gy);
-  printf("%6.6f\t", gz);
-
-  printf("%6.6f\t", hx);
-  printf("%6.6f\t", hy);
-  printf("%6.6f\t", hz);
-
-  printf("%6.6f\n", t);
-}
-
-static void setup() {
+void setup() {
+  // serial to display data
+  Serial.begin(115200);
 
   // start communication with IMU and 
   // set the accelerometer and gyro ranges.
@@ -58,11 +44,11 @@ static void setup() {
   beginStatus = IMU.begin(ACCEL_RANGE_4G,GYRO_RANGE_250DPS);
 }
 
-static void loop() {
+void loop() {
   if(beginStatus < 0) {
     delay(1000);
-    fprintf(stderr, "IMU initialization unsuccessful\n");
-    fprintf(stderr, "Check IMU wiring or try cycling power\n");
+    Serial.println("IMU initialization unsuccessful");
+    Serial.println("Check IMU wiring or try cycling power");
     delay(10000);
   }
   else{
@@ -155,11 +141,30 @@ static void loop() {
   }
 }
 
-int main(int argc, char ** argv) {
+void printData(){
 
-    setup();
+  // print the data
+  Serial.print(ax,6);
+  Serial.print("\t");
+  Serial.print(ay,6);
+  Serial.print("\t");
+  Serial.print(az,6);
+  Serial.print("\t");
 
-    while (true) {
-        loop();
-    }
+  Serial.print(gx,6);
+  Serial.print("\t");
+  Serial.print(gy,6);
+  Serial.print("\t");
+  Serial.print(gz,6);
+  Serial.print("\t");
+
+  Serial.print(hx,6);
+  Serial.print("\t");
+  Serial.print(hy,6);
+  Serial.print("\t");
+  Serial.print(hz,6);
+  Serial.print("\t");
+
+  Serial.println(t,6);
 }
+
