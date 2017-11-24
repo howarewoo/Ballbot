@@ -42,14 +42,6 @@ int RPM = 0;
 MPU9250 myIMU;
 
 void setupIMU(){
-  Wire.begin();
-  // TWBR = 12;  // 400 kbit/sec I2C speed
-  Serial.begin(38400);
-
-  // Set up the interrupt pin, its set as active high, push-pull
-  pinMode(intPin, INPUT);
-  digitalWrite(intPin, LOW);
-
   // Read the WHO_AM_I register, this is a good test of communication
   byte c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
   Serial.print(F("MPU9250 I AM 0x"));
@@ -154,34 +146,7 @@ void setupIMU(){
   }
 }
 
-void setupStepper(){
-  stepper1.begin(RPM);
-  stepper2.begin(RPM);
-  stepper3.begin(RPM);
-  stepper1.enable();
-  stepper2.enable();
-  stepper3.enable();
-  stepper1.setMicrostep(1);  // Set microstep mode to 1:1
-  stepper2.setMicrostep(1);  // Set microstep mode to 1:1
-  stepper3.setMicrostep(1);  // Set microstep mode to 1:1
-}
-
-float calculations(){
-  return 0;
-}
-
-
-void setup(){
-  setupIMU();
-  setupStepper();
-}
-
-
-// NEED TO USE "stepper#.setRPM(#)" to change speed of motor
-
-
-
-void loop() {
+void readIMU() {
   // If intPin goes high, all data registers have new data
   // On interrupt, check if data ready interrupt
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01){
@@ -337,4 +302,39 @@ void loop() {
       myIMU.sum = 0;
     } // if (myIMU.delt_t > 500)
   } // if (AHRS)
+}
+
+void setupStepper(){
+  stepper1.begin(RPM);
+  stepper2.begin(RPM);
+  stepper3.begin(RPM);
+  stepper1.enable();
+  stepper2.enable();
+  stepper3.enable();
+  stepper1.setMicrostep(1);  // Set microstep mode to 1:1
+  stepper2.setMicrostep(1);  // Set microstep mode to 1:1
+  stepper3.setMicrostep(1);  // Set microstep mode to 1:1
+}
+
+float calculations(){
+  return 0;
+}
+
+
+void setup(){
+  Wire.begin();
+  // TWBR = 12;  // 400 kbit/sec I2C speed
+  Serial.begin(38400);
+  // Set up the interrupt pin, its set as active high, push-pull
+  pinMode(intPin, INPUT);
+  digitalWrite(intPin, LOW);
+
+  setupIMU();
+  setupStepper();
+}
+
+
+// NEED TO USE "stepper#.setRPM(#)" to change speed of motor
+void loop(){
+  readIMU();
 }
