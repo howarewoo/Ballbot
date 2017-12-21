@@ -1,11 +1,12 @@
 #include "Arduino.h"
 #include "quaternionFilters.h"
 #include "MPU9250.h"
-#include "A4988.h"
-#include "MultiDriver.h"
-#include "SyncDriver.h"
+#include "AccelStepper.h"
+#include "math.h"
 
-#define MOTOR_STEPS 200
+#define ROBOT_HEIGHT 31 // inches
+#define WHEEL_RADIUS 1.625
+
 #define DIR1 7
 #define STEP1 8
 #define DIR2 9
@@ -16,18 +17,16 @@
 #define MS1 10
 #define MS2 11
 #define MS3 12
-A4988 stepper1(MOTOR_STEPS, DIR1, STEP1, MS1, MS2, MS3);
-A4988 stepper2(MOTOR_STEPS, DIR2, STEP2, MS1, MS2, MS3);
-A4988 stepper3(MOTOR_STEPS, DIR3, STEP3, MS1, MS2, MS3);
-SyncDriver controller(stepper1, stepper2, stepper3);
-
+AccelStepper stepper1(1, DIR1, STEP1);
+AccelStepper stepper2(1, DIR2, STEP2);
+AccelStepper stepper3(1, DIR3, STEP3);
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
 
 // -----------------------------------------------------------------------------
 // Need this to compile for some reason... No idea why. Think it has something
-// to do with the way
+// to do with the way the Teensy loader works
 extern "C"{
   int _getpid(){ return -1;}
   int _kill(int pid, int sig){ return -1; }
@@ -40,6 +39,9 @@ int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 int RPM = 0;
 
 MPU9250 myIMU;
+
+long speed1, speed2, speed3;
+
 
 void setupIMU(){
   // Read the WHO_AM_I register, this is a good test of communication
@@ -305,21 +307,27 @@ void readIMU() {
 }
 
 void setupStepper(){
-  stepper1.begin(RPM);
-  stepper2.begin(RPM);
-  stepper3.begin(RPM);
-  stepper1.enable();
-  stepper2.enable();
-  stepper3.enable();
-  stepper1.setMicrostep(1);  // Set microstep mode to 1:1
-  stepper2.setMicrostep(1);  // Set microstep mode to 1:1
-  stepper3.setMicrostep(1);  // Set microstep mode to 1:1
+  stepper1.setMaxSpeed(400);
+  stepper2.setMaxSpeed(400);
+  stepper3.setMaxSpeed(400);
 }
 
-float calculations(){
-  return 0;
+void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
+  stepper1.setSpeed(steps_sec1);
+  stepper2.setSpeed(steps_sec2);
+  stepper3.setSpeed(steps_sec3);
+  stepper1.runSpeed();
+  stepper2.runSpeed();
+  stepper3.runSpeed();
 }
 
+void speedCalculations(){
+  long vx = myIMU.roll*10;
+  long vy = myIMU.pitch*10;
+  speed1 = ((vx/2) + sqrt(3/4) * vy)/WHEEL_RADIUS;
+  speed2 = ((vx/2) - sqrt(3/4) * vy)/WHEEL_RADIUS;
+  speed3 = (vx)/WHEEL_RADIUS;
+}
 
 void setup(){
   Wire.begin();
@@ -333,8 +341,8 @@ void setup(){
   setupStepper();
 }
 
-
-// NEED TO USE "stepper#.setRPM(#)" to change speed of motor
 void loop(){
   readIMU();
+  speedCalculations();
+  runMotors(speed1, speed2, speed3);
 }
