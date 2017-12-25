@@ -3,6 +3,7 @@
 #include "MPU9250.h"
 #include "AccelStepper.h"
 #include "math.h"
+#include "PID.h"
 
 #define ROBOT_HEIGHT 31 // inches
 #define WHEEL_RADIUS 1.625
@@ -13,13 +14,19 @@
 #define STEP2 10
 #define DIR3 11
 #define STEP3 12
-// microstepping pins
-#define MS1 10
-#define MS2 11
-#define MS3 12
 AccelStepper stepper1(1, DIR1, STEP1);
 AccelStepper stepper2(1, DIR2, STEP2);
 AccelStepper stepper3(1, DIR3, STEP3);
+
+//Define Variables we'll be connecting to
+double DesiredAngleX, CurrentAngleX, OutputSpeedX, DesiredAngleY, CurrentAngleY, OutputSpeedY;
+double Kpx=4, Kpy=4;
+double Kix=0.2, Kiy=0.2;
+double Kdx=1, Kdy=1;
+
+//Specify the links and initial tuning parameters
+PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kpx, Kix, Kdx, P_ON_M, DIRECT);
+PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kpy, Kiy, Kdy, P_ON_M, DIRECT);
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
@@ -40,7 +47,7 @@ int RPM = 0;
 
 MPU9250 myIMU;
 
-long speed1, speed2, speed3;
+double speed1, speed2, speed3;
 
 
 void setupIMU(){
@@ -287,6 +294,9 @@ void readIMU() {
       myIMU.yaw  -= 8.5;
       myIMU.roll *= RAD_TO_DEG;
 
+      CurrentAngleX = myIMU.pitch;
+      CurrentAngleY = myIMU.roll;
+
       if(SerialDebug){
         Serial.print("Yaw, Pitch, Roll: ");
         Serial.print(myIMU.yaw, 2);
@@ -322,11 +332,16 @@ void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
 }
 
 void speedCalculations(){
-  long vx = myIMU.roll*10;
-  long vy = myIMU.pitch*10;
-  speed1 = ((vx/2) + sqrt(3/4) * vy)/WHEEL_RADIUS;
-  speed2 = ((vx/2) - sqrt(3/4) * vy)/WHEEL_RADIUS;
-  speed3 = (vx)/WHEEL_RADIUS;
+  speed1 = ((OutputSpeedX/2) + sqrt(3/4) * OutputSpeedY)/WHEEL_RADIUS;
+  speed2 = ((OutputSpeedX/2) - sqrt(3/4) * OutputSpeedY)/WHEEL_RADIUS;
+  speed3 = (OutputSpeedX)/WHEEL_RADIUS;
+}
+
+void setupPID(){
+  xPID.SetSampleTime(25) //25 milli is 40hz
+  yPID.SetSampleTime(25)
+  xPID.SetMode(AUTOMATIC);
+  yPID.SetMode(AUTOMATIC);
 }
 
 void setup(){
@@ -339,10 +354,13 @@ void setup(){
 
   setupIMU();
   setupStepper();
+  setupPID();
 }
 
 void loop(){
   readIMU();
+  xPID.compute();
+  yPID.compute();
   speedCalculations();
   runMotors(speed1, speed2, speed3);
 }
