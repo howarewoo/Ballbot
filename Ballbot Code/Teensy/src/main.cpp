@@ -18,15 +18,19 @@ AccelStepper stepper1(1, DIR1, STEP1);
 AccelStepper stepper2(1, DIR2, STEP2);
 AccelStepper stepper3(1, DIR3, STEP3);
 
+//Three PID controllers; one for each axis of rotation
 //Define Variables we'll be connecting to
-double DesiredAngleX, CurrentAngleX, OutputSpeedX, DesiredAngleY, CurrentAngleY, OutputSpeedY;
-double Kpx=4, Kpy=4;
-double Kix=0.2, Kiy=0.2;
-double Kdx=1, Kdy=1;
+double CurrentAngleX, OutputSpeedX, DesiredAngleX = 0;
+double CurrentAngleY, OutputSpeedY, DesiredAngleY = 0;
+double CurrentAngleZ, OutputSpeedZ, DesiredAngleZ = 0;
+double Kp_x=800, Kp_y=800, Kp_z=800;
+double Ki_x=0.2, Ki_y=0.2, Ki_z=0.2;
+double Kd_x=100, Kd_y=100, Kd_z=100;
 
 //Specify the links and initial tuning parameters
-PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kpx, Kix, Kdx, P_ON_M, DIRECT);
-PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kpy, Kiy, Kdy, P_ON_M, DIRECT);
+PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, P_ON_M, DIRECT);
+PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kp_y, Ki_y, Kd_y, P_ON_M, DIRECT);
+PID zPID(&CurrentAngleZ, &OutputSpeedZ, &DesiredAngleZ, Kp_z, Ki_z, Kd_z, P_ON_M, DIRECT);
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
@@ -296,6 +300,7 @@ void readIMU() {
 
       CurrentAngleX = myIMU.pitch;
       CurrentAngleY = myIMU.roll;
+      CurrentAngleZ = myIMU.yaw;
 
       if(SerialDebug){
         Serial.print("Yaw, Pitch, Roll: ");
@@ -332,9 +337,10 @@ void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
 }
 
 void speedCalculations(){
-  speed1 = ((OutputSpeedX/2) + sqrt(3/4) * OutputSpeedY)/WHEEL_RADIUS;
-  speed2 = ((OutputSpeedX/2) - sqrt(3/4) * OutputSpeedY)/WHEEL_RADIUS;
-  speed3 = (OutputSpeedX)/WHEEL_RADIUS;
+  speed1 = ((OutputSpeedX/2)+(sqrt(3/4)*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
+  speed2 = ((OutputSpeedX/2)-(sqrt(3/4)*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
+  speed3 =
+  (OutputSpeedX+OutputSpeedZ)/WHEEL_RADIUS;
 }
 
 void setupPID(){
@@ -361,6 +367,10 @@ void loop(){
   readIMU();
   xPID.compute();
   yPID.compute();
+  zPID.compute();
+  Serial.print("X-speed: "); Serial.print(OutputSpeedX);
+  Serial.print("Y-speed: "); Serial.print(OutputSpeedY);
+  Serial.print("Z-speed: "); Serial.print(OutputSpeedZ);
   speedCalculations();
   runMotors(speed1, speed2, speed3);
 }

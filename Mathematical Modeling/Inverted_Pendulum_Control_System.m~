@@ -41,7 +41,7 @@ title({'Response of Pendulum Position to an Impulse Disturbance';'under PID Cont
 
 Kp = 800;
 Ki = 0.2;
-Kd = 20;
+Kd = 100;
 C = pid(Kp,Ki,Kd);
 T = feedback(P_Bot,C);
 
@@ -49,7 +49,7 @@ T = feedback(P_Bot,C);
 
 t=0:0.01:10;
 impulse(T,t)
-axis([0, 2.5, 100, 100]);
+axis([0, 2.5, -0.1, 0.1]);
 title({'Response of Pendulum Position to an Impulse Disturbance';'under PID Control: Kp = 1000, Ki = 0.2, Kd = 100'});
 
 %%
