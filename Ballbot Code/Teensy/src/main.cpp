@@ -5,8 +5,9 @@
 #include "math.h"
 #include "PID.h"
 
-#define ROBOT_HEIGHT 31 // inches
+#define ROBOT_HEIGHT 31 //inches
 #define WHEEL_RADIUS 1.625
+#define MAX_SPEED 400 //steps per second
 
 #define DIR1 7
 #define STEP1 8
@@ -322,9 +323,9 @@ void readIMU() {
 }
 
 void setupStepper(){
-  stepper1.setMaxSpeed(400);
-  stepper2.setMaxSpeed(400);
-  stepper3.setMaxSpeed(400);
+  stepper1.setMaxSpeed(MAX_SPEED);
+  stepper2.setMaxSpeed(MAX_SPEED);
+  stepper3.setMaxSpeed(MAX_SPEED);
 }
 
 void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
@@ -344,10 +345,15 @@ void speedCalculations(){
 }
 
 void setupPID(){
-  xPID.SetSampleTime(25) //25 milli is 40hz
-  yPID.SetSampleTime(25)
+  xPID.SetSampleTime(10) //10 milli is 100hz
+  yPID.SetSampleTime(10)
+  zpid.SetSampleTime(10);
+  xpid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  ypid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  zpid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
   xPID.SetMode(AUTOMATIC);
   yPID.SetMode(AUTOMATIC);
+  zPID.SetMode(AUTOMATIC);
 }
 
 void setup(){
