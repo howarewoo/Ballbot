@@ -15,7 +15,7 @@ m = 15;         %Mass of Bot (lb)
 b = 0.1;        %Coefficient of Friction
 g = 32.1740;    %gravity (ft/s^2)
 l = 1;          %Length to pendulum center mass (ft)
-I = 0;          %Initial Inertia
+I = 0.006;          %Initial Inertia
 
 q = (M+m)*(I+m*l^2)-(m*l)^2;
 s = tf('s');

@@ -10,10 +10,9 @@ CAPSTONE project by Adam Woo, Graham Goodwin, and Chloe Desjardins
 
 ## Mathematical Modeling
 
-In essence, a ballbot is an omnidirectional inverted pendulum. This means that the problem can be approached in one of two ways.
+In essence, a ballbot is an omnidirectional inverted pendulum. This means that the ballbot can be broken down into two inverted pendulums that travel along the X and Y axis. The angle of the robot along these axis at any given time can be used to calculate the necessary velocity required to keep the pendulums upright.
 
-1. Implement a 2-dimensional inverted pendulum control for each plane of force, and sum the results.
-2. Find the angle for pitch around the z-axis, solve a 2-dimensional inverted pendulum problem for the plan along that angle, and then calculate the force needed for each point of control.
+The X and Y components can be summed to a desired resulting vector, which can be used to maintain the robots verticality in 3D space.
 
 Matlab was used for all of the control system modeling.
 
@@ -23,17 +22,16 @@ Here is a list of the selected hardware:
 
 | Component | Part | Description |
 | --- | --- | --- |
-| Microcontroller | Raspberry Pi 3B | Faster processor speed and an extensive community make the Raspberry Pi an ideal choice for the microcontroller over less powerful options like an Arduino Mega, or a less supported board. |
+| Microcontroller | Teensy 3.6 | Faster processor speed, easy plug and play setup, and an extensive community make the Teensy 3.6 an ideal choice for the microcontroller over less powerful options like an Arduino Mega, or a less supported board. |
 | IMU | MPU9250 | The 9 degrees of freedom supported by the MPU9250 allow for accurate angle measurements for a very cheap price. |
 | Ball | 10" Stainless Steel Mirror Ball w/ Plastidip | A 10" steel ball provides a round ridged surface strong enough to support the robots chassis. The ball is coated in Plastidip, a rubberlike spray that will increase the friction on the ball. |
-| Wheels | 3x Omniwheels | Omniwheels allow for free movement perpendicular to the wheel. This allows for the development of holonomic movement systems. |
-| Motors | 3x Nema 17 Stepper Motor | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
-| Motor Drivers | 3x A4988 Stepper Motor Driver | These drivers allow the stepper motors to be controlled with only two data pins; one for direction and one for speed. |
+| Wheels | 3x 3.25" VexPro Omniwheel | Omniwheels allow for free movement perpendicular to the wheel. This allows for the development of holonomic movement systems. |
+| Motors | 3x Nema 23 Stepper Motor | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
+| Motor Drivers | 3x TB6600 Stepper Motor Driver | These drivers allow the stepper motors to be controlled with only two data pins; one for direction and one for speed. |
 
 ## Building Process
 
-The
-![A4988 Wiring](https://github.com/awoox2/ballbot/raw/master/Images/A4988_wiring.png)
+![TB6600 Wiring](https://github.com/awoox2/ballbot/raw/master/Images/TB6600_wiring.png)
 
 ## Programming
 
@@ -41,6 +39,7 @@ All programming was done in the Atom text editor with the PlatformIO IDE package
 
 **Libraries**
 - SparkFun MPU-9250 9 DOF IMU Breakout by SparkFun Electronics
-- StepperDriver by Laurentiu Badea
+- AccelStepper by Mike McCauley
+- PID by Brett Beauregard
 
 ## Results

@@ -72,11 +72,12 @@ inputs = {'r'};
 outputs = {'x'; 'phi'};
 
 sys_est_cl = ss(Ace,Bce,Cce,Dce,'statename',states,'inputname',inputs,'outputname',outputs);
+sys_tf = tf(sys_est_cl);
 
 t = 0:0.01:5;
 r = 0.2*ones(size(t));
 [y,t,x]=lsim(sys_est_cl,r,t);
 [AX,H1,H2] = plotyy(t,y(:,1),t,y(:,2),'plot');
-set(get(AX(1),'Ylabel'),'String','cart position (m)')
+set(get(AX(1),'Ylabel'),'String','cart position (ft)')
 set(get(AX(2),'Ylabel'),'String','pendulum angle (radians)')
 title('Step Response with Observer-Based State-Feedback Control')
