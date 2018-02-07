@@ -3,7 +3,7 @@
 #include "MPU9250.h"
 #include "AccelStepper.h"
 #include "math.h"
-#include "PID.h"
+#include "PID_v1.h"
 
 #define ROBOT_HEIGHT 31 //inches
 #define WHEEL_RADIUS 1.625
@@ -61,9 +61,9 @@ void setupIMU(){
   Serial.print(F("MPU9250 I AM 0x"));
   Serial.print(c, HEX);
   Serial.print(F(" I should be 0x"));
-  Serial.println(0x71, HEX);
+  Serial.println(0x73, HEX);
 
-  if (c == 0x71){ // WHO_AM_I should always be 0x71{
+  if (c == 0x73){ // WHO_AM_I should always be 0x71{
     Serial.println(F("MPU9250 is online..."));
 
     // Start by performing self test and reporting values
@@ -98,12 +98,12 @@ void setupIMU(){
     Serial.print(" I should be 0x");
     Serial.println(0x48, HEX);
 
-    if (d != 0x48){
-      // Communication failed, stop here
-      Serial.println(F("Communication failed, abort!"));
-      Serial.flush();
-      abort();
-    }
+    // if (d != 0x48){
+    //   // Communication failed, stop here
+    //   Serial.println(F("Communication failed, abort!"));
+    //   Serial.flush();
+    //   abort();
+    // }
 
     // Get magnetometer calibration from AK8963 ROM
     myIMU.initAK8963(myIMU.factoryMagCalibration);
@@ -345,12 +345,12 @@ void speedCalculations(){
 }
 
 void setupPID(){
-  xPID.SetSampleTime(10) //10 milli is 100hz
-  yPID.SetSampleTime(10)
-  zpid.SetSampleTime(10);
-  xpid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  ypid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  zpid.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  xPID.SetSampleTime(10); //10 milli is 100hz
+  yPID.SetSampleTime(10);
+  zPID.SetSampleTime(10);
+  xPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  yPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
+  zPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
   xPID.SetMode(AUTOMATIC);
   yPID.SetMode(AUTOMATIC);
   zPID.SetMode(AUTOMATIC);
@@ -371,9 +371,9 @@ void setup(){
 
 void loop(){
   readIMU();
-  xPID.compute();
-  yPID.compute();
-  zPID.compute();
+  xPID.Compute();
+  yPID.Compute();
+  zPID.Compute();
   Serial.print("X-speed: "); Serial.print(OutputSpeedX);
   Serial.print("Y-speed: "); Serial.print(OutputSpeedY);
   Serial.print("Z-speed: "); Serial.print(OutputSpeedZ);

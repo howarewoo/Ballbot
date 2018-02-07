@@ -28,6 +28,8 @@ Here is a list of the selected hardware:
 | Wheels | 3x 3.25" VexPro Omniwheel | Omniwheels allow for free movement perpendicular to the wheel. This allows for the development of holonomic movement systems. |
 | Motors | 3x Nema 23 Stepper Motor | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
 | Motor Drivers | 3x TB6600 Stepper Motor Driver | These drivers allow the stepper motors to be controlled with only two data pins; one for direction and one for speed. |
+| Battery | Gens ace 5000mAh 11.1V LiPo | The battery must be at least 9V. This battery was a highly rated battery with a large capacity, sufficient voltage, and relatively low weight. |
+| Universal Battery Elimination Circuit | BW® RC Servo BEC UBEC 3A 5V | An UBEC is a voltage regulating circuit used to take power from the battery to the microprocessor. |
 
 ## Building Process
 
@@ -38,7 +40,6 @@ Here is a list of the selected hardware:
 All programming was done in the Atom text editor with the PlatformIO IDE package.
 
 **Libraries**
-- SparkFun MPU-9250 9 DOF IMU Breakout by SparkFun Electronics
 - AccelStepper by Mike McCauley
 - PID by Brett Beauregard
 

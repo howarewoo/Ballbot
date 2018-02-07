@@ -49,6 +49,12 @@ int myLed  = 13;  // Set up pin 13 led for toggling
 
 MPU9250 myIMU;
 
+extern "C"{
+  int _getpid(){ return -1;}
+  int _kill(int pid, int sig){ return -1; }
+  int _write(){return -1;}
+}
+
 void setup()
 {
   Wire.begin();
@@ -87,7 +93,7 @@ void setup()
   Serial.print(F("MPU9250 I AM 0x"));
   Serial.print(c, HEX);
   Serial.print(F(" I should be 0x"));
-  Serial.println(0x71, HEX);
+  Serial.println(0x73, HEX);
 
 #ifdef LCD
   display.setCursor(20,0); display.print("MPU9250");
@@ -99,7 +105,7 @@ void setup()
   delay(1000);
 #endif // LCD
 
-  if (c == 0x71) // WHO_AM_I should always be 0x71
+  if (c == 0x73) // WHO_AM_I should always be 0x71
   {
     Serial.println(F("MPU9250 is online..."));
 
@@ -166,13 +172,13 @@ void setup()
     delay(1000);
 #endif // LCD
 
-    if (d != 0x48)
-    {
-      // Communication failed, stop here
-      Serial.println(F("Communication failed, abort!"));
-      Serial.flush();
-      abort();
-    }
+//   if (d != 0x48)
+//   {
+//     // Communication failed, stop here
+//     Serial.println(F("Communication failed, abort!"));
+//     Serial.flush();
+//     abort();
+//   }
 
     // Get magnetometer calibration from AK8963 ROM
     myIMU.initAK8963(myIMU.factoryMagCalibration);
