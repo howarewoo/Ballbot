@@ -16,9 +16,11 @@
 
 #define ROBOT_HEIGHT 31 //inches
 #define WHEEL_RADIUS 1.625
-#define MAX_SPEED 4000 //steps per second
-int MAX_ANGLE = 180; //steps per second
-int sampleRate =  1000; //milliseconds
+#define STEPS_PER_ROTATION 200
+#define MAX_SPEED 120 //inches per second
+#define MAX_ROTATION 4000 //steps per second
+
+int sampleRate =  100000; //microseconds
 bool printFlag = false;
 
 #define DIR1 7
@@ -63,7 +65,7 @@ int Pin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 int RPM = 0;
 
 double speed1, speed2, speed3;
-int timer = 0, timerstart, timerend;
+double timer = 0, timerstart, timerend;
 
 
 // -----------------------------------------------------------------------------
@@ -281,7 +283,6 @@ void setupIMU(){
 }
 
 void readIMU(){
-  timerstart = millis();
   // If data ready bit set, all data registers have new data
   if(readByte(MPU6050_ADDRESS, INT_STATUS) & 0x01) {  // check if data ready interrupt
     readAccelData(accelCount);  // Read the x/y/z adc values
@@ -358,7 +359,6 @@ void readIMU(){
     blinkOn = ~blinkOn;
     count = millis();
   }
-  timerend = millis();
 }
 
 void getGres(){
@@ -730,42 +730,45 @@ void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * des
 }
 
 void setupStepper(){
-  stepper1.setMaxSpeed(MAX_SPEED);
-  stepper2.setMaxSpeed(MAX_SPEED);
-  stepper3.setMaxSpeed(MAX_SPEED);
+  stepper1.setMaxSpeed(MAX_ROTATION);
+  stepper2.setMaxSpeed(MAX_ROTATION);
+  stepper3.setMaxSpeed(MAX_ROTATION);
 }
 
-void runMotors(long steps_sec1, long steps_sec2, long steps_sec3){
+void setMotorSpeed(long steps_sec1, long steps_sec2, long steps_sec3){
   stepper1.setSpeed(steps_sec1);
   stepper2.setSpeed(steps_sec2);
   stepper3.setSpeed(steps_sec3);
+}
+
+void runMotors(){
   stepper1.runSpeed();
   stepper2.runSpeed();
   stepper3.runSpeed();
 }
 
 void speedCalculations(){
+  // Convert PID output to inches per second
+  int speedX = map(OutputSpeedX,0,255,0,MAX_SPEED);
+  int speedY = map(OutputSpeedY,0,255,0,MAX_SPEED);
+  int speedZ = map(OutputSpeedZ,0,255,0,MAX_SPEED);
   if (pitch < 0){
-    OutputSpeedX = -OutputSpeedX
+    speedX = -speedX;
   }
   if (roll < 0){
-    OutputSpeedY = -OutputSpeedY
+    speedY = -speedY;
   }
   // if (yaw < 0){
-  //   OutputSpeedZ = -OutputSpeedZ
+  //   speedZ = -speedZ;
   // }
-  speed1 = ((OutputSpeedX/2)+(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
-  speed2 = ((OutputSpeedX/2)-(0.866*OutputSpeedY)+OutputSpeedZ)/WHEEL_RADIUS;
-  speed3 = (OutputSpeedX+OutputSpeedZ)/WHEEL_RADIUS;
+
+  // from inches per second to steps per sec
+  speed1 = ((-(speedX/2)+(0.866*speedY)+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
+  speed2 = ((-(speedX/2)-(0.866*speedY)+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
+  speed3 = ((speedX+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
 }
 
 void setupPID(){
-  // xPID.SetSampleTime(10); //10 milli is 100hz
-  // yPID.SetSampleTime(10);
-  // zPID.SetSampleTime(10);
-  // xPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  // yPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
-  // zPID.SetOutputLimits(-MAX_SPEED, MAX_SPEED);
   xPID.SetMode(AUTOMATIC);
   yPID.SetMode(AUTOMATIC);
   zPID.SetMode(AUTOMATIC);
@@ -785,21 +788,21 @@ void setup(){
 }
 
 void loop(){
-  //  timerstart = millis();
+  timerstart = micros();
   //  Serial.print("timerstart: ");
   //  Serial.print(timerstart);
   readIMU();
   //  timer = timerend - timerstart;
   //      Serial.print("timer: ");
   //    Serial.println(timer);
-  //  double mapx = map(pitch,-MAX_ANGLE, MAX_ANGLE, -255, 255);
   CurrentAngleX = (double)-abs(pitch);
   CurrentAngleY = (double)-abs(roll);
-  CurrentAngleZ = (double)-abs(yaw);
+//  CurrentAngleZ = (double)-abs(yaw);
   xPID.Compute();
   yPID.Compute();
   zPID.Compute();
   speedCalculations();
+  setMotorSpeed(speed1, speed2, speed3);
   if (printFlag == true){
     Serial.print("X-angle: "); Serial.print(CurrentAngleX);
     Serial.print(" X-speed: "); Serial.println(OutputSpeedX);
@@ -811,17 +814,17 @@ void loop(){
     Serial.print("Motor 1 Speed: "); Serial.println(speed1);
     Serial.print("Motor 2 Speed: "); Serial.println(speed2);
     Serial.print("Motor 3 Speed: "); Serial.println(speed3);
+    Serial.print("Timer: "); Serial.println(timer);
   }
   //          Serial.println("test");
   //
-  //  while(timer < sampleRate){
-  //    runMotors(speed1, speed2, speed3);
-  //    timerend = millis();
+    while(timer < sampleRate-1){
+      runMotors();
+      timerend = micros();
   ////    Serial.print("timerend test: ");
   ////    Serial.println(timerend);
-  //    timer = millis()-timerstart;
-  //          Serial.print("timer: ");
-  //    Serial.println(timer);
-  //  }
+      timer = timerend-timerstart;
+    }
+
   printFlag = false;
 }
