@@ -12,25 +12,25 @@
 #include "math.h"
 #include "PID_v1.h"
 #include "Wire.h"
+#include "FrequencyTimer2.h"
+#include "TimerOne.h"
+#include "TimerThree.h"
 
 #define ROBOT_HEIGHT 31 //inches
 #define WHEEL_RADIUS 1.625
 #define STEPS_PER_ROTATION 6400 //steps
 #define MAX_SPEED 120 //inches per second
-#define MAX_FREQ 1000 //steps per second
+#define MAX_FREQ 20000 //steps per second
 
 int sampleRate =  100000; //microseconds
 bool printFlag = false;
 
-#define DIR1 7
+#define DIR1 22
 #define STEP1 2
-#define DIR2 9
+#define DIR2 23
 #define STEP2 3
-#define DIR3 11
+#define DIR3 24
 #define STEP3 5
-AccelStepper stepper1(1, DIR1, STEP1);
-AccelStepper stepper2(1, DIR2, STEP2);
-AccelStepper stepper3(1, DIR3, STEP3);
 
 //Three PID controllers; one for each axis of rotation
 //Define Variables we'll be connecting to
@@ -729,33 +729,33 @@ void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * des
 }
 
 void setupStepper(){  // Set a PWM signal to the step pins with 50% duty cycle
-  analogWrite(STEP1, 128);
-  analogWrite(STEP2, 128);
-  analogWrite(STEP3, 128);
+  analogWrite(STEP1, 10);
+  analogWrite(STEP2, 10);
+  analogWrite(STEP3, 10);
 }
 
 void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   if (stepHz1 < 0){
-    digitalWrite(DIR,LOW);
+    digitalWrite(DIR1,LOW);
   }
-  else(){
-    digitalWrite(DIR,HIGH);
+  else{
+    digitalWrite(DIR1,HIGH);
   }
   analogWriteFrequency(STEP1, stepHz1); // pin 3 also changes
 
   if (stepHz2 < 0){
-    digitalWrite(DIR,LOW);
+    digitalWrite(DIR2,LOW);
   }
-  else(){
-    digitalWrite(DIR,HIGH);
+  else{
+    digitalWrite(DIR2,HIGH);
   }
   analogWriteFrequency(STEP2, stepHz2); // pins 7, 8, 14, 35, 36, 37, 38 also change
 
   if (stepHz3 < 0){
-    digitalWrite(DIR,LOW);
+    digitalWrite(DIR3,LOW);
   }
-  else(){
-    digitalWrite(DIR,HIGH);
+  else{
+    digitalWrite(DIR3,HIGH);
   }
   analogWriteFrequency(STEP3, stepHz3); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }

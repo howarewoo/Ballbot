@@ -23,7 +23,7 @@ Here is a list of the selected hardware:
 | Component | Part | Description |
 | --- | --- | --- |
 | Microcontroller | Teensy 3.6 | Faster processor speed, easy plug and play setup, and an extensive community make the Teensy 3.6 an ideal choice for the microcontroller over less powerful options like an Arduino Mega, or a less supported board. |
-| IMU | MPU9250 | The 9 degrees of freedom supported by the MPU9250 allow for accurate angle measurements for a very cheap price. |
+| IMU | MPU6050 | The 6 degrees of freedom supported by the MPU6050 allow for accurate angle measurements for a very cheap price. |
 | Ball | 10" Stainless Steel Mirror Ball w/ Plastidip | A 10" steel ball provides a round ridged surface strong enough to support the robots chassis. The ball is coated in Plastidip, a rubberlike spray that will increase the friction on the ball. |
 | Wheels | 3x 3.25" VexPro Omniwheel | Omniwheels allow for free movement perpendicular to the wheel. This allows for the development of holonomic movement systems. |
 | Motors | 3x Nema 23 Stepper Motor | Stepper motors provide the high level of precision and torque at low speeds that the system will need to remain stable. |
@@ -35,12 +35,18 @@ Here is a list of the selected hardware:
 
 ![TB6600 Wiring](https://github.com/awoox2/ballbot/raw/master/Images/TB6600_wiring.png)
 
+The driver was manually set to the following:
+- Microstepping: 1/32
+- Current: 2.8A
+
 ## Programming
 
-All programming was done in the Atom text editor with the PlatformIO IDE package.
+All programming was done using the Atom text editor, ArduinoIDE, and Teensyloader programs.
 
 **Libraries**
-- AccelStepper by Mike McCauley
-- PID by Brett Beauregard
+- PID_v1.h by Brett Beauregard
+- quaternionFilter.h by Kris Winer
+- Math.h
+- Wire.h
 
 ## Results

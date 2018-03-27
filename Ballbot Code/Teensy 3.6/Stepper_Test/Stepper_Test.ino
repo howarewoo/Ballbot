@@ -1,4 +1,4 @@
-int PUL=7; //define Pulse pin
+int PUL=2; //define Pulse pin
 int DIR=8; //define Direction pin
 int ENA=5; //define Enable Pin
 void setup() {
