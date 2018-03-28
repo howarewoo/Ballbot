@@ -25,11 +25,11 @@
 int sampleRate =  100000; //microseconds
 bool printFlag = false;
 
-#define DIR1 22
+#define DIR1 24
 #define STEP1 2
-#define DIR2 23
+#define DIR2 25
 #define STEP2 3
-#define DIR3 24
+#define DIR3 26
 #define STEP3 5
 
 //Three PID controllers; one for each axis of rotation
@@ -741,7 +741,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR1,HIGH);
   }
-  analogWriteFrequency(STEP1, stepHz1); // pin 3 also changes
+  analogWriteFrequency(STEP1, abs(stepHz1)); // pin 3 also changes
 
   if (stepHz2 < 0){
     digitalWrite(DIR2,LOW);
@@ -749,7 +749,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR2,HIGH);
   }
-  analogWriteFrequency(STEP2, stepHz2); // pins 7, 8, 14, 35, 36, 37, 38 also change
+  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 7, 8, 14, 35, 36, 37, 38 also change
 
   if (stepHz3 < 0){
     digitalWrite(DIR3,LOW);
@@ -757,7 +757,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR3,HIGH);
   }
-  analogWriteFrequency(STEP3, stepHz3); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
 void speedCalculations(){
