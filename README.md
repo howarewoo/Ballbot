@@ -1,6 +1,10 @@
 # Ballbot: a Dynamically Stable Omnidirectional Robot
 
 *Under Construction*
+TO DO:
+- Manage direction pinout
+- Refine PID control system
+- Build and assemble chassis
 
 A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments. The ballbot works on the same principle as that of an inverted pendulum.
 
@@ -39,14 +43,19 @@ The driver was manually set to the following:
 - Microstepping: 1/32
 - Current: 2.8A
 
+The step pins output a square wave of varying frequencies. Pins 2, 3, and 5 where chosen because they all run on different timers. Therefore, the frequencies can be adjusted independently.
+
 ## Programming
 
-All programming was done using the Atom text editor, ArduinoIDE, and Teensyloader programs.
+All programming was done using the Atom text editor, Arduino IDE, and Teensyloader programs.
 
 **Libraries**
 - PID_v1.h by Brett Beauregard
 - quaternionFilter.h by Kris Winer
 - Math.h
 - Wire.h
+- FrequencyTimer2.h
+- TimerOne.h
+- TimerThree.h
 
 ## Results
