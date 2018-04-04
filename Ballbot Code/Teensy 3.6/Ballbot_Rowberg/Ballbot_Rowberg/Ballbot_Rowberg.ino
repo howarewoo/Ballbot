@@ -22,7 +22,7 @@
 #define ACCEL 2000 //steps per second
 
 
-int sampleRate =  100000; //microseconds
+int sampleRate =  10000; //microseconds
 bool printFlag = false;
 
 #define DIR1 12
@@ -531,7 +531,7 @@ void loop(){
   //  CurrentAngleZ = (double)-abs(yaw);
   
   timer = micros() - timerstart;
-  if (timer>=10000){
+  if (timer>=sampleRate){
     xPID.Compute();
     yPID.Compute();
     zPID.Compute();
