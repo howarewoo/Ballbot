@@ -21,13 +21,15 @@
 #define STEPS_PER_ROTATION 6400 //steps
 #define MAX_SPEED 120 //inches per second
 #define MAX_FREQ 20000 //steps per second
+#define ACCEL 2000 //steps per second
+
 
 int sampleRate =  100000; //microseconds
 bool printFlag = false;
 
-#define DIR1 24
+#define DIR1 12
 #define STEP1 2
-#define DIR2 25
+#define DIR2 24
 #define STEP2 3
 #define DIR3 26
 #define STEP3 5
@@ -37,9 +39,9 @@ bool printFlag = false;
 double CurrentAngleX, OutputSpeedX, DesiredAngleX = 0;
 double CurrentAngleY, OutputSpeedY, DesiredAngleY = 0;
 double CurrentAngleZ, OutputSpeedZ, DesiredAngleZ = 0;
-double Kp_x=1, Kp_y=1, Kp_z=1;
+double Kp_x=10, Kp_y=10, Kp_z=10;
 double Ki_x=0, Ki_y=0, Ki_z=0;
-double Kd_x=1, Kd_y=1, Kd_z=1;
+double Kd_x=20, Kd_y=20, Kd_z=20;
 
 //Specify the links and initial tuning parameters
 PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, DIRECT);
@@ -65,6 +67,7 @@ int RPM = 0;
 
 double speed1, speed2, speed3;
 double timer = 0, timerstart, timerend;
+int currentSpeed1, currentSpeed2, currentSpeed3;
 
 
 // -----------------------------------------------------------------------------
@@ -729,6 +732,10 @@ void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * des
 }
 
 void setupStepper(){  // Set a PWM signal to the step pins with 50% duty cycle
+  pinMode(DIR1, OUTPUT);          // sets the digital pin 13 as output
+  pinMode(DIR2, OUTPUT);          // sets the digital pin 13 as output
+  pinMode(DIR3, OUTPUT);          // sets the digital pin 13 as output
+  
   analogWrite(STEP1, 10);
   analogWrite(STEP2, 10);
   analogWrite(STEP3, 10);
@@ -741,23 +748,40 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR1,HIGH);
   }
-  analogWriteFrequency(STEP1, abs(stepHz1)); // pin 3 also changes
-
+  if (currentSpeed1 <= abs(stepHz1)){
+    analogWriteFrequency(STEP1, abs(currentSpeed1)+ACCEL); // pins 3 also change
+  }
+  else{
+    analogWriteFrequency(STEP1, abs(currentSpeed1)-ACCEL); // pins 3 also change
+  }
+  
   if (stepHz2 < 0){
     digitalWrite(DIR2,LOW);
   }
   else{
     digitalWrite(DIR2,HIGH);
   }
-  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 7, 8, 14, 35, 36, 37, 38 also change
+  if (currentSpeed2 <= abs(stepHz2)){
+    currentSpeed2 = abs(currentSpeed2)+ACCEL;
+    analogWriteFrequency(STEP2, currentSpeed2); // pins 7, 8, 14, 35, 36, 37, 38 also change
+  }
+  else{
+    currentSpeed2 = currentSpeed2-ACCEL;
+    analogWriteFrequency(STEP2, abs(currentSpeed2)-ACCEL); // pins 7, 8, 14, 35, 36, 37, 38 also change
+  }
 
   if (stepHz3 < 0){
-    digitalWrite(DIR3,LOW);
+    digitalWrite(DIR3,LOW); 
   }
   else{
     digitalWrite(DIR3,HIGH);
   }
-  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  if (currentSpeed3 <= stepHz3){
+    analogWriteFrequency(STEP3, abs(currentSpeed3)+ACCEL); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  }
+  else{
+    analogWriteFrequency(STEP3, abs(currentSpeed3)-ACCEL); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  }
 }
 
 void speedCalculations(){
@@ -801,13 +825,8 @@ void setup(){
 }
 
 void loop(){
-  timerstart = micros();
-  //  Serial.print("timerstart: ");
-  //  Serial.print(timerstart);
+
   readIMU();
-  //  timer = timerend - timerstart;
-  //      Serial.print("timer: ");
-  //    Serial.println(timer);
   CurrentAngleX = (double)-abs(pitch);
   CurrentAngleY = (double)-abs(roll);
   //  CurrentAngleZ = (double)-abs(yaw);
@@ -815,7 +834,11 @@ void loop(){
   yPID.Compute();
   zPID.Compute();
   speedCalculations();
+  
+  timerstart = micros();
   updateMotors(speed1, speed2, speed3);
+  timer = micros() - timerstart;
+  
   if (printFlag == true){
     Serial.print("X-angle: "); Serial.print(CurrentAngleX);
     Serial.print(" X-speed: "); Serial.println(OutputSpeedX);

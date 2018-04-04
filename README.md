@@ -1,6 +1,7 @@
 # Ballbot: a Dynamically Stable Omnidirectional Robot
 
 *Under Construction*
+
 TO DO:
 - Manage direction pinout
 - Refine PID control system
