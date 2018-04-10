@@ -29,7 +29,7 @@ rectangle('Position',[px-mr/2,py-mr/2,mr,mr],'Curvature',.1,'FaceColor',[.3 0.3 
 
 % set(gca,'YTick',[])
 % set(gca,'XTick',[])
-xlim([-3 3]);
+xlim([-2.5 2.5]);
 ylim([-1 1.5]);
 set(gca,'Color','k','XColor','w','YColor','w')
 set(gcf,'Position',[10 900 800 400])
