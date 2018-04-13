@@ -1,4 +1,4 @@
-function dy = cartpend(y,m,M,L,g,d,u)
+function dy = ballbot(y,m,M,L,g,d,u)
 
 Sy = sin(y(3));
 Cy = cos(y(3));

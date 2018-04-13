@@ -10,7 +10,7 @@
 
 #include "quaternionFilters.h"
 #include "math.h"
-#include "PID_v1.h"
+#include "discreteLQR.h"
 #include "Wire.h"
 #include "FrequencyTimer2.h"
 #include "TimerOne.h"
@@ -22,10 +22,64 @@
 #define MAX_SPEED 120 //inches per second
 #define MAX_FREQ 20000 //steps per second
 #define ACCEL 2000 //steps per second
+#define X 1
+#define X_dot 2
+#define Theta 3
+#define Theta_dot 4
 
-float K1=0.1,K2=0.29,K3=6.5,K4=1.12;
+double K[4] = {-3.1312, -8.3690, 177.6513, 34.1327};
 
-int sampleRate =  100000; //microseconds
+double A[4][4] = {
+  {0,      1,      0,     0},
+  {0,     -1,     98.1,   0},
+  {0,      0,      0,     1},
+  {0,     -4,    431.64,  0}
+}
+
+double B[4][1]={
+  {0},
+  {1},
+  {0},
+  {4}
+}
+
+double C[2][4]={
+  {1, 0, 0, 0},
+  {0, 0, 1, 0}
+}
+
+double D[2][1]={
+  {0},
+  {0}
+}
+
+double Setpoints[4][1]={
+  {0},
+  {0},
+  {PI},
+  {0}
+}
+
+double Inputs[4][1]={
+  {0},
+  {0},
+  {PI},
+  {0}
+}
+
+double Outputs[4][1]={
+  {0},
+  {0},
+  {PI},
+  {0}
+}
+
+Ts = 1/1000;  // seconds
+
+LQR xLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
+LQR yLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
+// LQR xLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
+
 bool printFlag = false;
 
 #define DIR1 12
@@ -35,19 +89,6 @@ bool printFlag = false;
 #define DIR3 26
 #define STEP3 5
 
-//Three PID controllers; one for each axis of rotation
-//Define Variables we'll be connecting to
-double CurrentAngleX, OutputSpeedX, DesiredAngleX = 0;
-double CurrentAngleY, OutputSpeedY, DesiredAngleY = 0;
-double CurrentAngleZ, OutputSpeedZ, DesiredAngleZ = 0;
-double Kp_x=10, Kp_y=10, Kp_z=10;
-double Ki_x=0, Ki_y=0, Ki_z=0;
-double Kd_x=20, Kd_y=20, Kd_z=20;
-
-//Specify the links and initial tuning parameters
-PID xPID(&CurrentAngleX, &OutputSpeedX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, DIRECT);
-PID yPID(&CurrentAngleY, &OutputSpeedY, &DesiredAngleY, Kp_y, Ki_y, Kd_y, DIRECT);
-PID zPID(&CurrentAngleZ, &OutputSpeedZ, &DesiredAngleZ, Kp_z, Ki_z, Kd_z, DIRECT);
 
 #define AHRS true         // Set to false for basic data read
 #define SerialDebug true  // Set to true to get Serial output for debugging
@@ -749,12 +790,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR1,HIGH);
   }
-  if (currentSpeed1 <= abs(stepHz1)){
-    analogWriteFrequency(STEP1, abs(currentSpeed1)+ACCEL); // pins 3 also change
-  }
-  else{
-    analogWriteFrequency(STEP1, abs(currentSpeed1)-ACCEL); // pins 3 also change
-  }
+  analogWriteFrequency(STEP1, abs(currentSpeed1)); // pins 3 also change
 
   if (stepHz2 < 0){
     digitalWrite(DIR2,LOW);
@@ -762,14 +798,8 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR2,HIGH);
   }
-  if (currentSpeed2 <= abs(stepHz2)){
-    currentSpeed2 = abs(currentSpeed2)+ACCEL;
-    analogWriteFrequency(STEP2, currentSpeed2); // pins 7, 8, 14, 35, 36, 37, 38 also change
-  }
-  else{
-    currentSpeed2 = currentSpeed2-ACCEL;
-    analogWriteFrequency(STEP2, abs(currentSpeed2)-ACCEL); // pins 7, 8, 14, 35, 36, 37, 38 also change
-  }
+  analogWriteFrequency(STEP2, currentSpeed2); // pins 7, 8, 14, 35, 36, 37, 38 also change
+
 
   if (stepHz3 < 0){
     digitalWrite(DIR3,LOW);
@@ -777,43 +807,14 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR3,HIGH);
   }
-  if (currentSpeed3 <= stepHz3){
-    analogWriteFrequency(STEP3, abs(currentSpeed3)+ACCEL); // pins 6, 9, 10, 20, 21, 22, 23 also change
-  }
-  else{
-    analogWriteFrequency(STEP3, abs(currentSpeed3)-ACCEL); // pins 6, 9, 10, 20, 21, 22, 23 also change
-  }
-}
-
-long getLQRSpeed(float phi,float dphi,float angle,float dangle){
-  return (phi*K1+dphi*K2+K3*angle+dangle*K4)*285;
+  analogWriteFrequency(STEP3, abs(currentSpeed3); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
 void speedCalculations(){
-  // Convert PID output to inches per second
-  int speedX = map(OutputSpeedX,0,255,0,MAX_SPEED);
-  int speedY = map(OutputSpeedY,0,255,0,MAX_SPEED);
-  int speedZ = map(OutputSpeedZ,0,255,0,MAX_SPEED);
-  if (pitch < 0){
-    speedX = -speedX;
-  }
-  if (roll < 0){
-    speedY = -speedY;
-  }
-  // if (yaw < 0){
-  //   speedZ = -speedZ;
-  // }
-
   // from inches per second to steps per sec
-  speed1 = ((-(speedX/2)+(0.866*speedY)+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
-  speed2 = ((-(speedX/2)-(0.866*speedY)+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
-  speed3 = ((speedX+speedZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
-}
-
-void setupPID(){
-  xPID.SetMode(AUTOMATIC);
-  yPID.SetMode(AUTOMATIC);
-  zPID.SetMode(AUTOMATIC);
+  speed1 = ((-(OutputX/2)+(0.866*OutputY)+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
+  speed2 = ((-(OutputX/2)-(0.866*OutputY)+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
+  speed3 = ((OutputX+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
 }
 
 void setup(){
@@ -832,12 +833,9 @@ void setup(){
 void loop(){
 
   readIMU();
-  CurrentAngleX = (double)-abs(pitch);
-  CurrentAngleY = (double)-abs(roll);
-  //  CurrentAngleZ = (double)-abs(yaw);
-  xPID.Compute();
-  yPID.Compute();
-  zPID.Compute();
+  OutputX = xLQR.update(xAngle,Theta,X_dot);
+  OutputY = yLQR.update(yAngle,Theta,X_dot);
+  // OutputZ = zLQR.update(zAngle,Theta,X_dot);
   speedCalculations();
 
   timerstart = micros();
@@ -845,12 +843,12 @@ void loop(){
   timer = micros() - timerstart;
 
   if (printFlag == true){
-    Serial.print("X-angle: "); Serial.print(CurrentAngleX);
-    Serial.print(" X-speed: "); Serial.println(OutputSpeedX);
-    Serial.print("Y-angle: "); Serial.print(CurrentAngleY);
-    Serial.print(" Y-speed: "); Serial.println(OutputSpeedY);
-    Serial.print("Z-angle: "); Serial.print(CurrentAngleZ);
-    Serial.print(" Z-speed: "); Serial.println(OutputSpeedZ);
+    Serial.print("X-angle: "); Serial.print(180*xAngle/PI);
+    Serial.print(" X-speed: "); Serial.println(OutputX);
+    Serial.print("Y-angle: "); Serial.print(180*yAngle/PI);
+    Serial.print(" Y-speed: "); Serial.println(OutputY);
+    // Serial.print("Z-angle: "); Serial.print(180*zAngle/PI);
+    // Serial.print(" Z-speed: "); Serial.println(OutputZ);
 
     Serial.print("Motor 1 Speed: "); Serial.println(speed1);
     Serial.print("Motor 2 Speed: "); Serial.println(speed2);
