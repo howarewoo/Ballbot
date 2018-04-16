@@ -1,5 +1,14 @@
 /*
-discreteLQR.h - Library implementation of a Linear Quadradic Regulator
+ * discreteSSC.h - Library implementation of a State Space Controller
+ *
+ * by Adam Woo
+ *
+ * The goal of this library is to implement state space controls in C++ or
+ * Arduino without the need for external matrix or linear algrbra libraries.
+ *
+ * TODO:
+ * - Read number of states
+ * - Add full state estimation
 */
 
 #if ARDUINO >= 100
@@ -8,12 +17,12 @@ discreteLQR.h - Library implementation of a Linear Quadradic Regulator
 #include "WProgram.h"
 #endif
 
-#include "discreteLQR.h"
+#include "discreteSSC.h"
 
 // Constructor /////////////////////////////////////////////////////////////////
 // Function that handles the creation and setup of instances
 
-LQR::LQR(double A[4][1], double B[4][1], double K[1][4], double Ts, double Setpoints[4][1], double Inputs[4][1], double Outputs[4][1])
+SSC::SSC(double A[4][4], double B[4][1], double K[1][4], double Ts, double Setpoints[4][1], double U[4][1], double X[4][1])
 {
   // initialize this instance's variables
   myA = A;
@@ -21,11 +30,11 @@ LQR::LQR(double A[4][1], double B[4][1], double K[1][4], double Ts, double Setpo
   myK = K;
   myTs = Ts;
   mySetpoints = Setpoints;
-  myOutputs = Outputs;
-  myInputs = Inputs;
+  myX = X;
+  myU = U;
 
   // do whatever is required to initialize the library
-  LQR::setMatrix();
+  SSC::setMatrix();
 
   sampleTime = myTs * 1000000;
   lastTime = micros()-SampleTime;
@@ -34,7 +43,7 @@ LQR::LQR(double A[4][1], double B[4][1], double K[1][4], double Ts, double Setpo
 // Public Methods //////////////////////////////////////////////////////////////
 // Functions available in Wiring sketches, this library, and other libraries
 
-void LQR::setMatrix(){
+void SSC::setMatrix(){
   int i, j;
 
   // Calculate B*K
@@ -52,14 +61,14 @@ void LQR::setMatrix(){
   }
 }
 
-double LQR::update(double Inputs, int inState, int outState){
+double SSC::update(double value, int inState, int outState){
   // eventhough this function is public, it can access
   // and modify this library's private variables
   unsigned long now = micros();
   unsigned long timeChange = (now - lastTime);
   if(timeChange>=SampleTime)
   {
-    myInputs[inState][0] = Input;
+    myU[inState][0] = value;
     int i, j;
     double myError[4][1];
 
@@ -68,37 +77,35 @@ double LQR::update(double Inputs, int inState, int outState){
 
     // (y(i-1,:)'-[dest; 0; pi; 0]) = Inputs - Setpoints = Error
     for (i = 0; i < 4; i++){
-      for (j = 0; j < 4; j++){
-        myError[i][j] = myInputs[i][j]-mySetpoints[i][j];
-      }
+      myError[i][0] = myU[i][0]-mySetpoints[i][0];
     }
 
     // ((A-B*K)*(y(i-1,:)'-[dest; 0; pi; 0])) = myMat*Error = Y_dot
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        myOutputs[i][0] += myMat[i][j] * myError[j][0];
+        myX[i][0] += myMat[i][j] * myError[j][0];
       }
     }
 
     // (((A-B*K)*(y(i-1,:)'-[dest; 0; pi; 0]))*Ts) = Y_dot * Ts = Y_dot_dis
     for (int i = 0; i < 4; i++) {
-      myOutputs[i][0] *= myTs;
+      myX[i][0] *= myTs;
     }
 
-    // (((A-B*K)*(y(i-1,:)'-[dest; 0; pi; 0]))*Ts)+y(i-1,:)' = Y_dot_dis + Inputs
+    // (((A-B*K)*(y(i-1,:)'-[dest; 0; pi; 0]))*Ts)+y(i-1,:)' = X_dot_dis + Inputs
     for (int i = 0; i < 4; i++) {
-      myOutputs[i][0] += myInputs[i][0];
+      myX[i][0] += myU[i][0];
     }
 
-    myInputs = myOutputs;
+    myU = myX;
     lastTime = now;
-    return myOutputs[outState][0];
+    return myX[outState][0];
   }
 }
 
 // Private Methods /////////////////////////////////////////////////////////////
 // Functions only available to other functions in this library
 
-void LQR::doSomethingSecret(void)
+void SSC::doSomethingSecret(void)
 {
 }

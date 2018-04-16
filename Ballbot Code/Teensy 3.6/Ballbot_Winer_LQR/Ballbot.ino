@@ -10,24 +10,24 @@
 
 #include "quaternionFilters.h"
 #include "math.h"
-#include "discreteLQR.h"
+#include "discreteSSC.h"
 #include "Wire.h"
 #include "FrequencyTimer2.h"
 #include "TimerOne.h"
 #include "TimerThree.h"
 
-#define ROBOT_HEIGHT 31 //inches
-#define WHEEL_RADIUS 1.625
+#define ROBOT_HEIGHT 1 //meters
+#define WHEEL_RADIUS 0.041275 //meters
 #define STEPS_PER_ROTATION 6400 //steps
-#define MAX_SPEED 120 //inches per second
+#define ROTATION_LENGTH 0.2593 //meters
 #define MAX_FREQ 20000 //steps per second
-#define ACCEL 2000 //steps per second
-#define X 1
-#define X_dot 2
-#define Theta 3
-#define Theta_dot 4
+#define X 0
+#define X_dot 1
+#define Theta 2
+#define Theta_dot 3
 
-double K[4] = {-3.1312, -8.3690, 177.6513, 34.1327};
+// Gains calculated in Matlab
+double K[4] = {-44.8997,  -51.3366,  362.7038,   73.7774};
 
 double A[4][4] = {
   {0,      1,      0,     0},
@@ -43,13 +43,11 @@ double B[4][1]={
   {4}
 }
 
-double C[2][4]={
-  {1, 0, 0, 0},
-  {0, 0, 1, 0}
+double C[1][4]={
+  {0, 1, 0, 0}
 }
 
 double D[2][1]={
-  {0},
   {0}
 }
 
@@ -74,11 +72,11 @@ double Outputs[4][1]={
   {0}
 }
 
-Ts = 1/1000;  // seconds
+Ts = 1/100;  // seconds
 
-LQR xLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
-LQR yLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
-// LQR xLQR(A, B, K, Ts, Setpoints, Inputs, Outputs);
+SSC xSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
+SSC ySSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
+// SSC zSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
 
 bool printFlag = false;
 
@@ -389,9 +387,13 @@ void readIMU(){
     yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);
     pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
-    pitch_degrees *= 180.0f / PI;
-    yaw_degrees  *= 180.0f / PI;
-    roll_degrees  *= 180.0f / PI;
+    // pitch_degrees *= 180.0f / PI;
+    // yaw_degrees  *= 180.0f / PI;
+    // roll_degrees  *= 180.0f / PI;
+
+    xAngle=pitch;
+    yAngle=roll;
+    // zAngle=yaw;
 
     //    Serial.print("Yaw, Pitch, Roll: ");
     Serial.print("Yaw = "); Serial.print(yaw, 2); Serial.print(", ");
@@ -790,7 +792,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR1,HIGH);
   }
-  analogWriteFrequency(STEP1, abs(currentSpeed1)); // pins 3 also change
+  analogWriteFrequency(STEP1, abs(stepHz1)); // pins 3 also change
 
   if (stepHz2 < 0){
     digitalWrite(DIR2,LOW);
@@ -798,7 +800,7 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR2,HIGH);
   }
-  analogWriteFrequency(STEP2, currentSpeed2); // pins 7, 8, 14, 35, 36, 37, 38 also change
+  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 7, 8, 14, 35, 36, 37, 38 also change
 
 
   if (stepHz3 < 0){
@@ -807,14 +809,19 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR3,HIGH);
   }
-  analogWriteFrequency(STEP3, abs(currentSpeed3); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  analogWriteFrequency(STEP3, abs(stepHz3); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
-void speedCalculations(){
-  // from inches per second to steps per sec
-  speed1 = ((-(OutputX/2)+(0.866*OutputY)+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
-  speed2 = ((-(OutputX/2)-(0.866*OutputY)+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
-  speed3 = ((OutputX+OutputZ)/(2*PI*WHEEL_RADIUS))*STEPS_PER_ROTATION;
+void speedCalculations(double X, Y, Z){
+  // calculate individual motor speeds
+  speed1 = (-(X/2)+(0.866*Y)+Z);
+  speed2 = (-(X/2)-(0.866*Y)+Z);
+  speed3 = (X+Z);
+
+  // conversion from m/s to steps/s
+  speed1*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
+  speed2*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
+  speed3*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
 }
 
 void setup(){
@@ -831,16 +838,14 @@ void setup(){
 }
 
 void loop(){
-
   readIMU();
-  OutputX = xLQR.update(xAngle,Theta,X_dot);
-  OutputY = yLQR.update(yAngle,Theta,X_dot);
+  OutputX = xSSC.update(xAngle,Theta,X_dot);
+  OutputY = ySSC.update(yAngle,Theta,X_dot);
   // OutputZ = zLQR.update(zAngle,Theta,X_dot);
-  speedCalculations();
-
-  timerstart = micros();
+  speedCalculations(OutputX, OutputY, OutputZ);
+  // timerstart = micros();
   updateMotors(speed1, speed2, speed3);
-  timer = micros() - timerstart;
+  // timer = micros() - timerstart;
 
   if (printFlag == true){
     Serial.print("X-angle: "); Serial.print(180*xAngle/PI);

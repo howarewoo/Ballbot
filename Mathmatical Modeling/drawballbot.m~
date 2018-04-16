@@ -23,9 +23,9 @@ plot([-10 10],[0 0],'w','LineWidth',2)
 hold on
 rectangle('Position',[x-W/2,y-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
 
-plot([x px],[y 1.5*py],'w','LineWidth',35)
+plot([x px],[y 2*py],'w','LineWidth',35)
 
-rectangle('Position',[px-mr/2,py-mr/2,mr,mr],'Curvature',.1,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
+rectangle('Position',[px-mr/2,py-mr/2,mr,mr],'Curvature',.5,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
 
 % set(gca,'YTick',[])
 % set(gca,'XTick',[])
