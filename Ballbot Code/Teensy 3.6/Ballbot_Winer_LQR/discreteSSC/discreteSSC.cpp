@@ -56,7 +56,7 @@ void SSC::setMatrix(){
   // Calculate A-(B*K)
   for (i = 0; i < 4; i++){
     for (j = 0; j < 4; j++){
-      myMat[i][j] = A[i][j]-BK[i][j];
+      myMat[i][j] = myA[i][j]-myBK[i][j];
     }
   }
 }

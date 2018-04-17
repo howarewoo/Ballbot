@@ -34,45 +34,47 @@ double A[4][4] = {
   {0,     -1,     98.1,   0},
   {0,      0,      0,     1},
   {0,     -4,    431.64,  0}
-}
+};
 
 double B[4][1]={
   {0},
   {1},
   {0},
   {4}
-}
+};
 
 double C[1][4]={
   {0, 1, 0, 0}
-}
+};
 
 double D[2][1]={
   {0}
-}
+};
 
-double Setpoints[4][1]={
+long double Setpoints[4][1]={
   {0},
   {0},
   {PI},
   {0}
-}
+};
 
-double Inputs[4][1]={
+long double Inputs[4][1]={
   {0},
   {0},
   {PI},
   {0}
-}
+};
 
-double Outputs[4][1]={
+long double Outputs[4][1]={
   {0},
   {0},
   {PI},
   {0}
-}
+};
 
-Ts = 1/100;  // seconds
+double Ts = 0.01;  // seconds
+long double xAngle, yAngle, zAngle;
+long double OutputX, OutputY, OutputZ;
 
 SSC xSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
 SSC ySSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
@@ -105,8 +107,8 @@ extern "C"{
 int Pin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 int RPM = 0;
 
-double speed1, speed2, speed3;
-double timer = 0, timerstart, timerend;
+long double speed1, speed2, speed3;
+long double timer = 0, timerstart, timerend;
 int currentSpeed1, currentSpeed2, currentSpeed3;
 
 
@@ -809,14 +811,14 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR3,HIGH);
   }
-  analogWriteFrequency(STEP3, abs(stepHz3); // pins 6, 9, 10, 20, 21, 22, 23 also change
+  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
-void speedCalculations(double X, Y, Z){
+void speedCalculations(double Vx, double Vy, double Vz){
   // calculate individual motor speeds
-  speed1 = (-(X/2)+(0.866*Y)+Z);
-  speed2 = (-(X/2)-(0.866*Y)+Z);
-  speed3 = (X+Z);
+  speed1 = (-(Vx/2)+(0.866*Vy)+Vz);
+  speed2 = (-(Vx/2)-(0.866*Vy)+Vz);
+  speed3 = (Vx+Vz);
 
   // conversion from m/s to steps/s
   speed1*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
@@ -833,12 +835,15 @@ void setup(){
   digitalWrite(Pin, LOW);
 
   setupIMU();
-  setupPID();
+  xSSC.setSSC();
+  ySSC.setSSC();
+//  zSSC.setSSC();
   setupStepper();
 }
 
 void loop(){
   readIMU();
+  
   OutputX = xSSC.update(xAngle,Theta,X_dot);
   OutputY = ySSC.update(yAngle,Theta,X_dot);
   // OutputZ = zLQR.update(zAngle,Theta,X_dot);
@@ -848,17 +853,17 @@ void loop(){
   // timer = micros() - timerstart;
 
   if (printFlag == true){
-    Serial.print("X-angle: "); Serial.print(180*xAngle/PI);
-    Serial.print(" X-speed: "); Serial.println(OutputX);
-    Serial.print("Y-angle: "); Serial.print(180*yAngle/PI);
-    Serial.print(" Y-speed: "); Serial.println(OutputY);
+    Serial.print("X-angle: "); Serial.print(180*double(xAngle)/PI);
+    Serial.print(" X-speed: "); Serial.println(double(OutputX));
+    Serial.print("Y-angle: "); Serial.print(180*double(yAngle)/PI);
+    Serial.print(" Y-speed: "); Serial.println(double(OutputY));
     // Serial.print("Z-angle: "); Serial.print(180*zAngle/PI);
     // Serial.print(" Z-speed: "); Serial.println(OutputZ);
 
-    Serial.print("Motor 1 Speed: "); Serial.println(speed1);
-    Serial.print("Motor 2 Speed: "); Serial.println(speed2);
-    Serial.print("Motor 3 Speed: "); Serial.println(speed3);
-    Serial.print("Timer: "); Serial.println(timer);
+    Serial.print("Motor 1 Speed: "); Serial.println(long(speed1));
+    Serial.print("Motor 2 Speed: "); Serial.println(long(speed2));
+    Serial.print("Motor 3 Speed: "); Serial.println(long(speed3));
+    Serial.print("Timer: "); Serial.println(Ts);
   }
   printFlag = false;
 }
