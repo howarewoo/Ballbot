@@ -5,7 +5,7 @@ clear all; close all; clc;
 
 m = 10;         % mass of chassis (kg)
 M = 1;          % mass of ball (kg)
-l = .1;        % length to center mass of chassis (m)
+l = .1;         % length to center mass of chassis (m)
 g = -9.81;      % gravity (m/s)
 d = 1;          % damping factor
 start = 0;      % x-axis initial location (m)
@@ -37,7 +37,7 @@ D = [0;
      0];
 
 Qs = [1 0 0 0;
-    0 10 0 0;
+    0 100 0 0;
     0 0 10 0;
     0 0 0 10];
 

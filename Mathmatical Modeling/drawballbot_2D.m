@@ -1,6 +1,8 @@
-function drawballbot_2D(y,m,M,L)
-x = y(1);
-th = y(3);
+function drawballbot_2D(x,y,m,M,L)
+xx = x(1);
+thx = x(3);
+xy = y(1);
+thy = y(3);
 
 % kinematics
 % x = 3;        % cart position
@@ -14,25 +16,48 @@ mr = .05*sqrt(m); % mass radius
 
 % positions
 % y = wr/2; % cart vertical position
+x = H/2; % cart vertical position
 y = H/2; % cart vertical position
 
-px = x + L*sin(th);
-py = y - L*cos(th);
+pxx = xx + L*sin(thx);
+pyx = x - L*cos(thx);
+pxy = xy + L*sin(thy);
+pyy = y - L*cos(thy);
 
+subplot(2,1,1)
 plot([-10 10],[0 0],'w','LineWidth',2)
 hold on
-rectangle('Position',[x-W/2,y-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
+rectangle('Position',[xx-W/2,x-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
 
-plot([x px],[y 1.5*py],'w','LineWidth',35)
+plot([xx pxx],[x 1.5*pyx],'w','LineWidth',35)
 
-rectangle('Position',[px-mr/2,py-mr/2,mr,mr],'Curvature',.1,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
+rectangle('Position',[pxx-mr/2,pyx-mr/2,mr,mr],'Curvature',.1,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
+
+xlim([-2.5 2.5]);
+ylim([-.5 1]);
+set(gca,'Color','k','XColor','w','YColor','w')
+set(gcf,'Color','k')
+set(gcf,'InvertHardcopy','off')   
+
+% box off
+drawnow
+hold off
+
+subplot(2,1,2)
+plot([-10 10],[0 0],'w','LineWidth',2)
+hold on
+rectangle('Position',[xy-W/2,y-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
+
+plot([xy pxy],[y 1.5*pyy],'w','LineWidth',35)
+
+rectangle('Position',[pxy-mr/2,pyy-mr/2,mr,mr],'Curvature',.1,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
 
 % set(gca,'YTick',[])
 % set(gca,'XTick',[])
 xlim([-2.5 2.5]);
-ylim([-1 1.5]);
+ylim([-.5 1]);
 set(gca,'Color','k','XColor','w','YColor','w')
-set(gcf,'Position',[10 900 800 400])
+set(gcf,'Position',[10 1100 1100 600])
 set(gcf,'Color','k')
 set(gcf,'InvertHardcopy','off')   
 

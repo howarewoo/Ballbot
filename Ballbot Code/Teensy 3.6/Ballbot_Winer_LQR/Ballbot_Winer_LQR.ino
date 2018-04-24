@@ -29,17 +29,17 @@
 double K[4] = {-12.0212,  -13.6898,  167.7522,   14.2047};
 
 double A[4][4] = {
-  {0,      1,      0,     0},
-  {0,     -1,     98.1,   0},
-  {0,      0,      0,     1},
-  {0,     -4,    431.64,  0}
+  {{0    0.0010         0         0}
+   {0   -0.0010    0.0981         0}
+   {0         0         0    0.0010}
+   {0   -0.0100    1.0791         0}
 };
 
 double B[4][1]={
   {0},
   {1},
   {0},
-  {4}
+  {10}
 };
 
 double C[1][4]={
@@ -820,7 +820,7 @@ void speedCalculations(long double Vx, long double Vy, long double Vz){
   // calculate individual motor speeds
   speed1 = -((Vx)+(Vy/-(sqrt(3))))+Vz;
   speed2 = -((Vx)+(Vy/(sqrt(3))))+Vz;
-  speed3 = -Vx+Vz;
+  speed3 = Vx+Vz;
 
   // conversion from m/s to steps/s
   speed1*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
