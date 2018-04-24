@@ -18,19 +18,34 @@
 
 
 // library interface description
-class SSC
-{
-  // user-accessible "public" interface
-  public:
-    SSC(double, double, double, double, double, double, double);
-
-    void setMatrix(void);
-
-    void update(double, int);
-
+class SSC{
   // library-accessible "private" interface
   private:
     void doSomethingSecret(void);
+
+    double myA[4][4];
+    double myB[4][1];
+    double myK[4];
+    double myTs;
+    long double mySetpoints[4][1];
+    long double myX[4][1];
+    long double myU[4][1];
+
+    double sampleTime;
+    int lastTime;
+    int now;
+    int i,j;
+
+    long double myMat[4][4];
+    long double myBK[4][4];
+
+  // user-accessible "public" interface
+  public:
+    SSC(double [4][4], double [4][1], double [4], double, long double [4][1], long double [4][1], long double [4][1]);
+
+    void setSSC(void);
+
+    long double update(long double, int, int);
 };
 
 #endif

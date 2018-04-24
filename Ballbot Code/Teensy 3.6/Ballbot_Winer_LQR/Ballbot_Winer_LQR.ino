@@ -18,16 +18,15 @@
 
 #define ROBOT_HEIGHT 1 //meters
 #define WHEEL_RADIUS 0.041275 //meters
-#define STEPS_PER_ROTATION 6400 //steps
+#define STEPS_PER_ROTATION 1600 //steps
 #define ROTATION_LENGTH 0.2593 //meters
-#define MAX_FREQ 20000 //steps per second
 #define X 0
 #define X_dot 1
 #define Theta 2
 #define Theta_dot 3
 
 // Gains calculated in Matlab
-double K[4] = {-44.8997,  -51.3366,  362.7038,   73.7774};
+double K[4] = {-12.0212,  -13.6898,  167.7522,   14.2047};
 
 double A[4][4] = {
   {0,      1,      0,     0},
@@ -54,25 +53,25 @@ double D[2][1]={
 long double Setpoints[4][1]={
   {0},
   {0},
-  {PI},
+  {0},
   {0}
 };
 
 long double Inputs[4][1]={
   {0},
   {0},
-  {PI},
+  {0},
   {0}
 };
 
 long double Outputs[4][1]={
   {0},
   {0},
-  {PI},
+  {0},
   {0}
 };
 
-double Ts = 0.01;  // seconds
+long double Ts = 0.01;  // seconds
 long double xAngle, yAngle, zAngle;
 long double OutputX, OutputY, OutputZ;
 
@@ -393,8 +392,8 @@ void readIMU(){
     // yaw_degrees  *= 180.0f / PI;
     // roll_degrees  *= 180.0f / PI;
 
-    xAngle=pitch;
-    yAngle=roll;
+    xAngle=(long double)pitch;
+    yAngle=(long double)roll;
     // zAngle=yaw;
 
     //    Serial.print("Yaw, Pitch, Roll: ");
@@ -782,19 +781,24 @@ void setupStepper(){  // Set a PWM signal to the step pins with 50% duty cycle
   pinMode(DIR2, OUTPUT);          // sets the digital pin 13 as output
   pinMode(DIR3, OUTPUT);          // sets the digital pin 13 as output
 
-  analogWrite(STEP1, 10);
-  analogWrite(STEP2, 10);
-  analogWrite(STEP3, 10);
+  analogWrite(STEP1, 3);
+  analogWrite(STEP2, 3);
+  analogWrite(STEP3, 3);
 }
 
 void updateMotors(long stepHz1, long stepHz2, long stepHz3){
+
+  analogWriteFrequency(STEP1, abs(stepHz1)); // pins 2, 7, 8, 14, 35, 36, 37, 38 also change
+  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 3, 4 also change
+  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 5, 6, 9, 10, 20, 21, 22, 23 also change
+
+
   if (stepHz1 < 0){
     digitalWrite(DIR1,LOW);
   }
   else{
     digitalWrite(DIR1,HIGH);
   }
-  analogWriteFrequency(STEP1, abs(stepHz1)); // pins 3 also change
 
   if (stepHz2 < 0){
     digitalWrite(DIR2,LOW);
@@ -802,7 +806,6 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR2,HIGH);
   }
-  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 7, 8, 14, 35, 36, 37, 38 also change
 
 
   if (stepHz3 < 0){
@@ -811,14 +814,13 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
   else{
     digitalWrite(DIR3,HIGH);
   }
-  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
-void speedCalculations(double Vx, double Vy, double Vz){
+void speedCalculations(long double Vx, long double Vy, long double Vz){
   // calculate individual motor speeds
-  speed1 = (-(Vx/2)+(0.866*Vy)+Vz);
-  speed2 = (-(Vx/2)-(0.866*Vy)+Vz);
-  speed3 = (Vx+Vz);
+  speed1 = -((Vx)+(Vy/-(sqrt(3))))+Vz;
+  speed2 = -((Vx)+(Vy/(sqrt(3))))+Vz;
+  speed3 = -Vx+Vz;
 
   // conversion from m/s to steps/s
   speed1*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
@@ -842,28 +844,29 @@ void setup(){
 }
 
 void loop(){
+  timerstart = micros();
+
   readIMU();
-  
+
   OutputX = xSSC.update(xAngle,Theta,X_dot);
   OutputY = ySSC.update(yAngle,Theta,X_dot);
   // OutputZ = zLQR.update(zAngle,Theta,X_dot);
   speedCalculations(OutputX, OutputY, OutputZ);
-  // timerstart = micros();
-  updateMotors(speed1, speed2, speed3);
-  // timer = micros() - timerstart;
+  updateMotors((long)speed1, (long)speed2, (long)speed3);
+  timer = micros() - timerstart;
 
   if (printFlag == true){
-    Serial.print("X-angle: "); Serial.print(180*double(xAngle)/PI);
-    Serial.print(" X-speed: "); Serial.println(double(OutputX));
-    Serial.print("Y-angle: "); Serial.print(180*double(yAngle)/PI);
-    Serial.print(" Y-speed: "); Serial.println(double(OutputY));
+    Serial.print("X-angle: "); Serial.print(180*(double)xAngle/PI);
+    Serial.print(" X-speed: "); Serial.println((double)OutputX);
+    Serial.print("Y-angle: "); Serial.print(180*(double)yAngle/PI);
+    Serial.print(" Y-speed: "); Serial.println((double)OutputY);
     // Serial.print("Z-angle: "); Serial.print(180*zAngle/PI);
     // Serial.print(" Z-speed: "); Serial.println(OutputZ);
 
-    Serial.print("Motor 1 Speed: "); Serial.println(long(speed1));
-    Serial.print("Motor 2 Speed: "); Serial.println(long(speed2));
-    Serial.print("Motor 3 Speed: "); Serial.println(long(speed3));
-    Serial.print("Timer: "); Serial.println(Ts);
+    Serial.print("Motor 1 Speed: "); Serial.println((long)speed1);
+    Serial.print("Motor 2 Speed: "); Serial.println((long)speed2);
+    Serial.print("Motor 3 Speed: "); Serial.println((long)speed3);
+    Serial.print("Timer: "); Serial.println((long)timer);
   }
   printFlag = false;
 }

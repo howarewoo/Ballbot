@@ -1,4 +1,4 @@
-function drawballbot(y,m,M,L)
+function drawballbot_2D(y,m,M,L)
 x = y(1);
 th = y(3);
 
