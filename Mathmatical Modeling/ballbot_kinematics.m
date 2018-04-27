@@ -1,6 +1,6 @@
 clear all; close all; clc;
 
-Vx=1;
+Vx=.5;
 Vy=1;
 Vz=0;
 
@@ -15,8 +15,8 @@ sin2=sin(60/(180/pi));
 % speed2 = -((Vx)+(Vy/(2*sin2)))+Vz
 % speed3 = -Vx+Vz
 
-speed1 = -((Vx)+(Vy/-(sqrt(3))))+Vz
-speed2 = -((Vx)+(Vy/(sqrt(3))))+Vz
+speed1 = ((Vx)+(Vy/-(sqrt(3))))+Vz
+speed2 = ((Vx)+(Vy/(sqrt(3))))+Vz
 speed3 = -Vx+Vz
 
 X12 = (speed1*cos1)+(speed2*cos2)

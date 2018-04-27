@@ -19,34 +19,35 @@
 #define ROBOT_HEIGHT 1 //meters
 #define WHEEL_RADIUS 0.041275 //meters
 #define STEPS_PER_ROTATION 1600 //steps
-#define ROTATION_LENGTH 0.2593 //meters
+#define METERS_PER_ROTATION 0.25933908 //meters
 #define X 0
 #define X_dot 1
 #define Theta 2
 #define Theta_dot 3
 
 // Gains calculated in Matlab
-double K[4] = {-12.0212,  -13.6898,  167.7522,   14.2047};
+double K[4] = {-3.0482,  -32.4149,  176.8639,   14.3248}; // Ts = .01
+//double K[4] = {-0.4146,   -5.2879,   98.1783,    3.8257}; // Ts = .05
 
 double A[4][4] = {
-  {{0    0.0010         0         0}
-   {0   -0.0010    0.0981         0}
-   {0         0         0    0.0010}
-   {0   -0.0100    1.0791         0}
+   {0,         1,         0,         0},
+   {0,   -1.1765,   88.8671,         0},
+   {0,         0,         0,         1},
+   {0,  -11.7647,  986.7706,         0}
 };
 
 double B[4][1]={
-  {0},
-  {1},
-  {0},
-  {10}
+  {      0},
+  { 1.1765},
+  {      0},
+  {11.7647}
 };
 
 double C[1][4]={
   {0, 1, 0, 0}
 };
 
-double D[2][1]={
+double D[1][1]={
   {0}
 };
 
@@ -106,6 +107,7 @@ extern "C"{
 int Pin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
 int RPM = 0;
 
+int motorReady=0;
 long double speed1, speed2, speed3;
 long double timer = 0, timerstart, timerend;
 int currentSpeed1, currentSpeed2, currentSpeed3;
@@ -360,7 +362,7 @@ void readIMU(){
 
   // Serial print and/or display at 0.5 s rate independent of data rates
   delt_t = millis() - count;
-  if (delt_t > 500) { // update LCD once per half-second independent of read rate
+  if (delt_t > 10) { // update LCD once per half-second independent of read rate
     printFlag = true;
     digitalWrite(blinkPin, blinkOn);
     /*
@@ -781,12 +783,17 @@ void setupStepper(){  // Set a PWM signal to the step pins with 50% duty cycle
   pinMode(DIR2, OUTPUT);          // sets the digital pin 13 as output
   pinMode(DIR3, OUTPUT);          // sets the digital pin 13 as output
 
-  analogWrite(STEP1, 3);
-  analogWrite(STEP2, 3);
-  analogWrite(STEP3, 3);
+  analogWriteResolution(4);
+  analogWrite(STEP1, 1);
+  analogWrite(STEP2, 1);
+  analogWrite(STEP3, 1);
 }
 
 void updateMotors(long stepHz1, long stepHz2, long stepHz3){
+
+  if(abs(stepHz1) >= 2000000000){
+    return;
+  }
 
   analogWriteFrequency(STEP1, abs(stepHz1)); // pins 2, 7, 8, 14, 35, 36, 37, 38 also change
   analogWriteFrequency(STEP2, abs(stepHz2)); // pins 3, 4 also change
@@ -818,14 +825,14 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
 
 void speedCalculations(long double Vx, long double Vy, long double Vz){
   // calculate individual motor speeds
-  speed1 = -((Vx)+(Vy/-(sqrt(3))))+Vz;
-  speed2 = -((Vx)+(Vy/(sqrt(3))))+Vz;
-  speed3 = Vx+Vz;
+  speed1 = (((Vx)+(Vy/-(sqrt(3)))))+Vz;
+  speed2 = (((Vx)+(Vy/(sqrt(3)))))+Vz;
+  speed3 = -Vx+Vz;
 
   // conversion from m/s to steps/s
-  speed1*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
-  speed2*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
-  speed3*=(STEPS_PER_ROTATION/ROTATION_LENGTH);
+  speed1*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
+  speed2*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
+  speed3*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
 }
 
 void setup(){
@@ -841,19 +848,29 @@ void setup(){
   ySSC.setSSC();
 //  zSSC.setSSC();
   setupStepper();
+  timerstart = micros();
 }
 
 void loop(){
-  timerstart = micros();
-
+  
   readIMU();
 
   OutputX = xSSC.update(xAngle,Theta,X_dot);
   OutputY = ySSC.update(yAngle,Theta,X_dot);
   // OutputZ = zLQR.update(zAngle,Theta,X_dot);
   speedCalculations(OutputX, OutputY, OutputZ);
-  updateMotors((long)speed1, (long)speed2, (long)speed3);
+
   timer = micros() - timerstart;
+//  if (motorReady==0 && timer>3000000){
+//    motorReady=1;
+//  }
+  
+//  if (motorReady==1){
+    updateMotors((long)speed1, (long)speed2, (long)speed3);
+    timerstart = micros();
+//  }
+
+  
 
   if (printFlag == true){
     Serial.print("X-angle: "); Serial.print(180*(double)xAngle/PI);

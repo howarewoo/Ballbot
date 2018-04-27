@@ -3,8 +3,8 @@
 
 clear all; close all; clc;
 
-m = 10;         % mass of chassis (kg)
-M = 1;          % mass of ball (kg)
+m = 7.7;         % mass of chassis (kg)
+M = .85;          % mass of ball (kg)
 l = .1;         % length to center mass of chassis (m)
 g = -9.81;      % gravity (m/s)
 d = 1;          % damping factor
@@ -37,16 +37,16 @@ D = [0;
      0];
 
 Qs = [1 0 0 0;
+    0 100 0 0;
+    0 0 1 0;
+    0 0 0 1];
+
+Ql = [1 0 0 0;
     0 10 0 0;
     0 0 10 0;
     0 0 0 10];
 
-Ql = [10 0 0 0;
-    0 1 0 0;
-    0 0 10 0;
-    0 0 0 10];
-
-R = .001;
+R = .01;
 
 K=zeros(1,size(A,1));
 
@@ -75,9 +75,8 @@ yy=zeros(tlen,size(C,1));
 % y(1,2)=pi+angle;
 % y_hat=zeros(tlen,size(C,1));
 
-m1=zeros(tlen,1);
-m2=zeros(tlen,1);
-m3=zeros(tlen,1);
+motor=zeros(tlen,3);
+
 
 
 for i = 2:tlen
@@ -100,7 +99,7 @@ for i = 2:tlen
     
     % state space control
     if (abs((xx(i-1,3)-pi)*(180/pi)) > 5)
-        K=K-(K-Kl)/2;
+%         K=K-(K-Kl)/2;
     else
         K=K-(K-Ks)/2;
     end
@@ -108,7 +107,7 @@ for i = 2:tlen
     yx(i,:)=xx(i,:)*C';
     
     if (abs((xy(i-1,3)-pi)*(180/pi)) > 5)
-        K=K-(K-Kl)/2;
+%         K=K-(K-Kl)/2;
     else
         K=K-(K-Ks)/2;
     end
@@ -123,9 +122,9 @@ for i = 2:tlen
 %     x(i,:)=(((A*x(i-1,:)')+(B*u))*Ts);
 %     y(i)=x(i,:)*C';
 
-m1(i) = -(xx(i,2))+((xy(i,2)/-(sqrt(3))));
-m2(i) = -(xx(i,2))+((xy(i,2)/(sqrt(3))));
-m3(i) = xx(i,2);
+motor(i,1) = -(xx(i,2))+((xy(i,2)/-(sqrt(3))));
+motor(i,2) = -(xx(i,2))+((xy(i,2)/(sqrt(3))));
+motor(i,3) = xx(i,2);
 
 end
 
@@ -134,23 +133,23 @@ end
 %% Draw Simulation
 close all;
 for k=1:1/(10*Ts):length(tspan)
-    drawballbot_2D(xx(k,:),xy(k,:),m,M,l);
+    drawballbot_2D(xx(k,:),xy(k,:),m,M,l,t,tspan(1:k),motor(1:k,:));
 end
 
-figure;
-subplot(3,1,1);
-plot(tspan,m1);
-title('Motor Velocities with State-Feedback Control and Noise')
-ylim([-1 1]);
-grid on
-subplot(3,1,2);
-plot(tspan,m2);
-ylim([-1 1]);
-grid on
-subplot(3,1,3);
-plot(tspan,m3);
-ylim([-1 1]);
-grid on
+% figure;
+% subplot(3,1,1);
+% plot(tspan,m1);
+% title('Motor Velocities with State-Feedback Control and Noise')
+% ylim([-1 1]);
+% grid on
+% subplot(3,1,2);
+% plot(tspan,m2);
+% ylim([-1 1]);
+% grid on
+% subplot(3,1,3);
+% plot(tspan,m3);
+% ylim([-1 1]);
+% grid on
 
 figure;
 subplot(2,2,1);
@@ -158,27 +157,51 @@ subplot(2,2,1);
 grid on
 set(get(AX(1),'Ylabel'),'String','ball position (m)')
 set(get(AX(2),'Ylabel'),'String','chassis angle (degrees)')
-title('Ballbot Positions with State-Feedback Control and Noise')
+title('Ballbot Positions along X')
 
 subplot(2,2,3);
 [AX,H1,H2] = plotyy(tspan,xx(:,2),tspan,xx(:,4)*(180/pi),'plot');
 grid on
 set(get(AX(1),'Ylabel'),'String','ball velocity (m/s)')
 set(get(AX(2),'Ylabel'),'String','chassis angle (degrees/s)')
-title('Ballbot Velocities with State-Feedback Control and Noise')
+title('Ballbot Velocities along X')
 
 subplot(2,2,2);
 [AX,H1,H2] = plotyy(tspan,xy(:,1),tspan,(xy(:,3)-pi)*(180/pi),'plot');
 grid on
 set(get(AX(1),'Ylabel'),'String','ball position (m)')
 set(get(AX(2),'Ylabel'),'String','chassis angle (degrees)')
-title('Ballbot Positions with State-Feedback Control and Noise')
+title('Ballbot Positions along Y')
 
 subplot(2,2,4);
 [AX,H1,H2] = plotyy(tspan,xy(:,2),tspan,xy(:,4)*(180/pi),'plot');
 grid on
 set(get(AX(1),'Ylabel'),'String','ball velocity (m/s)')
 set(get(AX(2),'Ylabel'),'String','chassis angle (degrees/s)')
-title('Ballbot Velocities with State-Feedback Control and Noise')
+title('Ballbot Velocities along Y')
 
 set(gcf,'Position',[10 1100 1100 600])
+
+
+
+
+y =
+
+\begin{bmatrix}
+0 & 1 & 0 & 0
+\end{bmatrix}
+
+\begin{bmatrix}
+x
+\\ \dot{x}
+\\ \theta 
+\\ \dot{\theta }
+\end{bmatrix}
+
++
+
+\begin{bmatrix}
+0
+\end{bmatrix}
+
+u

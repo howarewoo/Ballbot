@@ -7,9 +7,13 @@ TO DO:
 - Refine PID control system
 - Build and assemble chassis
 
-A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments. The ballbot works on the same principle as that of an inverted pendulum.
+A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments.
 
-\- Wikipedia
+The ballbot works on the same principle as that of an inverted pendulum. As such, the ballbot can be broken down into three major components: The pendulum, the control system, and the drive unit. The pendulum component, and therefore the control system, can further be broken down from a single three dimensional coordinate system to pair of two dimensional coordinate systems.
+
+Because the pendulum is broken down into two dimensional models, the control systems computes the required X and Y axis components to control the system. Using a linear quadratic regulator and discrete state space controller, the control system can use the angle from vertical to produce optimized control for the desired states. These states can be summed to represent a resultant vector in the XY plane.
+
+This resultant vector can be converted to motor speeds though kinematic equations for the interaction between the motors, wheels, and ball.
 
 CAPSTONE project by Adam Woo, Graham Goodwin, and Chloe Desjardins
 
@@ -19,7 +23,14 @@ In essence, a ballbot is an omnidirectional inverted pendulum. This means that t
 
 The X and Y components can be summed to a desired resulting vector, which can be used to maintain the robots verticality in 3D space.
 
+The state equations for an inverted pendulum can be represented as:
+
+<img src="https://latex.codecogs.com/gif.latex?%5Cbegin%7Bbmatrix%7D%20%5Cdot%7Bx%7D%20%5C%5C%20%5Cddot%7Bx%7D%20%5C%5C%20%5Cdot%7B%5Ctheta%7D%20%5C%5C%20%5Cddot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%5C%5C%200%20%26%20-d/M%20%26%20-m*g/M%20%26%200%5C%5C%200%20%26%200%20%26%200%20%26%201%5C%5C%200%20%26%20-d/%28M*l%29%20%26%20-%28m&plus;M%29*g/%28M*l%29%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5C%5C%201/M%3B%20%5C%5C%200%20%5C%5C%201/%28M*l%29%20%5Cend%7Bbmatrix%7D%20u" class="center" />
+
+<img src="https://latex.codecogs.com/gif.latex?y%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5Cend%7Bbmatrix%7D%20u" class="center"/>
+
 Matlab was used for all of the control system modeling.
+
 
 ## Hardware
 

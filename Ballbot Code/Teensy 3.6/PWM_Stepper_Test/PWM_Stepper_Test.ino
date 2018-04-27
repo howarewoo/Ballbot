@@ -14,17 +14,17 @@ long low = 1000;
 long high = 2147483647;  // maximum value of long
 
 void setup() {
-//  analogWrite(STEP1, 3);
+  analogWrite(STEP1, 3);
   analogWrite(STEP2, 3);
-//  analogWrite(STEP3, 3);
-//  digitalWrite(DIR1,HIGH);
-//  analogWriteFrequency(STEP1, 1000); // pins 7, 8, 14, 35, 36, 37, 38 also change
-//
+  analogWrite(STEP3, 3);
+  digitalWrite(DIR1,HIGH);
+  analogWriteFrequency(STEP1, 1000); // pins 7, 8, 14, 35, 36, 37, 38 also change
+
   digitalWrite(DIR2,HIGH);
   analogWriteFrequency(STEP2, 1000); // pin 3 also changes
-//
-//  digitalWrite(DIR3,LOW);
-//  analogWriteFrequency(STEP3, 1000); // pins 6, 9, 10, 20, 21, 22, 23 also change
+
+  digitalWrite(DIR3,LOW);
+  analogWriteFrequency(STEP3, 1000); // pins 6, 9, 10, 20, 21, 22, 23 also change
 }
 
 void loop() {
