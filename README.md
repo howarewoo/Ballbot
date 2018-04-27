@@ -33,9 +33,9 @@ The state equations for an inverted pendulum can be represented as:
 <img src="https://latex.codecogs.com/gif.latex?y%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5Cend%7Bbmatrix%7D%20u"/>
 </p>
 
-Where <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20y"/img> is the output of the control system.
+Where <img src="https://latex.codecogs.com/gif.latex?y"/img> is the output of the control system.
 
-These state space equations are used to produce a state space controller, where the output of the controller, <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdot%7Bx%7D"/img>, is the desired ball velocity along the X or Y axis.
+These state space equations are used to produce a state space controller, where the output of the controller, <img src="https://latex.codecogs.com/gif.latex?%5Cdot%7Bx%7D"/img>, is the desired ball velocity along the X or Y axis.
 
 These velocities can be plugged into a set of kinematic equations that calculate the required speed of each motor. The motor speeds much sum all torques around the Z axis to 0 for our system. These equations can be represented as such:
 
