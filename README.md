@@ -45,7 +45,7 @@ These velocities can be plugged into a set of kinematic equations that calculate
 <img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbegin%7Bbmatrix%7D%20V_x%5C%5C%20V_y%5C%5C%20V_z%5C%5C%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cfrac%7B1%7D%7Bsin%2845%5E%7B%5Ccirc%7D%29%7D%20%5Cbegin%7Bbmatrix%7D%20cos%28-60%5E%7B%5Ccirc%7D%29%20%26%20cos%2860%5E%7B%5Ccirc%7D%29%20%26%20cos%28180%5E%7B%5Ccirc%7D%29%5C%5C%20sin%28-60%5E%7B%5Ccirc%7D%29%20%26%20sin%2860%5E%7B%5Ccirc%7D%29%20%26%20sin%28180%5E%7B%5Ccirc%7D%29%5C%5C%201%20%26%201%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D"/img>
 </p>
 
-The scalar <img src=" https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cfrac%7B1%7D%7Bsin%2845%5E%7B%5Ccirc%7D%29%7D"\> accounts for the angle of the wheels relative the the center of the ball. This shifts the resultant velocity to the top surface of the ball.
+The scalar <img src=" https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cfrac%7B1%7D%7Bsin%2845%5E%7B%5Ccirc%7D%29%7D"/> accounts for the angle of the wheels relative the the center of the ball. This shifts the resultant velocity to the top surface of the ball.
 
 To solve for the motor speeds, the inverse of the 3x3 matrix was found. When arranged to solve for the desired motor speeds, the equations look as follows:
 
