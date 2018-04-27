@@ -25,9 +25,21 @@ The X and Y components can be summed to a desired resulting vector, which can be
 
 The state equations for an inverted pendulum can be represented as:
 
-<img src="https://latex.codecogs.com/gif.latex?%5Cbegin%7Bbmatrix%7D%20%5Cdot%7Bx%7D%20%5C%5C%20%5Cddot%7Bx%7D%20%5C%5C%20%5Cdot%7B%5Ctheta%7D%20%5C%5C%20%5Cddot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%5C%5C%200%20%26%20-d/M%20%26%20-m*g/M%20%26%200%5C%5C%200%20%26%200%20%26%200%20%26%201%5C%5C%200%20%26%20-d/%28M*l%29%20%26%20-%28m&plus;M%29*g/%28M*l%29%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5C%5C%201/M%3B%20%5C%5C%200%20%5C%5C%201/%28M*l%29%20%5Cend%7Bbmatrix%7D%20u" class="center" />
+<p align="center">
+<img src="https://latex.codecogs.com/gif.latex?%5Cbegin%7Bbmatrix%7D%20%5Cdot%7Bx%7D%20%5C%5C%20%5Cddot%7Bx%7D%20%5C%5C%20%5Cdot%7B%5Ctheta%7D%20%5C%5C%20%5Cddot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%5C%5C%200%20%26%20-d/M%20%26%20-m*g/M%20%26%200%5C%5C%200%20%26%200%20%26%200%20%26%201%5C%5C%200%20%26%20-d/%28M*l%29%20%26%20-%28m&plus;M%29*g/%28M*l%29%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5C%5C%201/M%3B%20%5C%5C%200%20%5C%5C%201/%28M*l%29%20%5Cend%7Bbmatrix%7D%20u"/>
 
-<img src="https://latex.codecogs.com/gif.latex?y%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5Cend%7Bbmatrix%7D%20u" class="center"/>
+<img src="https://latex.codecogs.com/gif.latex?y%20%3D%20%5Cbegin%7Bbmatrix%7D%200%20%26%201%20%26%200%20%26%200%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20x%20%5C%5C%20%5Cdot%7Bx%7D%20%5C%5C%20%5Ctheta%20%5C%5C%20%5Cdot%7B%5Ctheta%20%7D%20%5Cend%7Bbmatrix%7D%20&plus;%20%5Cbegin%7Bbmatrix%7D%200%20%5Cend%7Bbmatrix%7D%20u"/>
+</p>
+
+Where <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20y"/img> is the output of the control system.
+
+These state space equations are used to produce a state space controller, where the output of the controller, <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdot%7Bx%7D"/img>, is the desired ball velocity along the X or Y axis.
+
+These velocities can be plugged into a set of kinematic equations that calculate the required speed of each motor. The motor speeds much sum all torques around the Z axis to 0 for our system. These equations can be represented as such:
+
+<p align="center">
+<img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cbegin%7Bbmatrix%7D%20M_%7B1%7D%20%5C%5C%20M_%7B2%7D%20%5C%5C%20M_%7B3%7D%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cbegin%7Bbmatrix%7D%202cos%28-60%5E%7B%5Ccirc%7D%29%20%26%202sin%28-60%5E%7B%5Ccirc%7D%29%20%26%201%5C%5C%202cos%2860%5E%7B%5Ccirc%7D%29%20%26%202sin%2860%5E%7B%5Ccirc%7D%29%20%26%201%5C%5C%202cos%28180%5E%7B%5Ccirc%7D%29%20%26%202sin%28180%5E%7B%5Ccirc%7D%29%20%26%201%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_%7Bx%7D%20%5C%5C%20V_%7By%7D%20%5C%5C%20V_%7Bz%7D%20%5Cend%7Bbmatrix%7D"/img>
+</p>
 
 Matlab was used for all of the control system modeling.
 

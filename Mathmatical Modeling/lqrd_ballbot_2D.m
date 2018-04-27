@@ -181,27 +181,3 @@ set(get(AX(2),'Ylabel'),'String','chassis angle (degrees/s)')
 title('Ballbot Velocities along Y')
 
 set(gcf,'Position',[10 1100 1100 600])
-
-
-
-
-y =
-
-\begin{bmatrix}
-0 & 1 & 0 & 0
-\end{bmatrix}
-
-\begin{bmatrix}
-x
-\\ \dot{x}
-\\ \theta 
-\\ \dot{\theta }
-\end{bmatrix}
-
-+
-
-\begin{bmatrix}
-0
-\end{bmatrix}
-
-u
