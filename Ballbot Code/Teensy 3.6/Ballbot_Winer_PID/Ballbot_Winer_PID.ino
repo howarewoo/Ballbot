@@ -10,100 +10,34 @@
 
 #include "quaternionFilters.h"
 #include "math.h"
-#include "discreteSSC.h"
+#include "PID_v1.h"
 #include "Wire.h"
 #include "FrequencyTimer2.h"
 #include "TimerOne.h"
 #include "TimerThree.h"
 
 #define MAXSPEED 20000 //steps per second
+#define ROBOT_HEIGHT 1 //meters
 #define WHEEL_RADIUS 0.041275 //meters
 #define STEPS_PER_ROTATION 1600 //steps
 #define METERS_PER_ROTATION 0.25933908 //meters
-#define X 0
-#define X_dot 1
-#define Theta 2
-#define Theta_dot 3
 
-// Gains calculated in Matlab
-double K[4] = {-19.1493,  -78.8363,  731.4712,  255.0344}; // Ts = .01
-//double K[4] = {-3.8233,  -11.6122,  157.3357,   15.1280}; // Ts = .05
-//double K[4] = {-6.6584,  -71.0167,  429.0208,   53.3783}; // Ts = .005
+//Three PID controllers; one for each axis of rotation
+//Define Variables we'll be connecting to
+double CurrentAngleX, OutputX, DesiredAngleX = 0;
+double CurrentAngleY, OutputY, DesiredAngleY = 0;
+double Kp_x=1.2, Kp_y=1.2;
+double Ki_x=0, Ki_y=0;
+double Kd_x=1, Kd_y=1;
 
-long double Ts = 0.01;  // seconds
+double Ts = 0.01;
 
-//double A[4][4] = {
-//   {0,         1,         0,         0},
-//   {0,   -0.1176,   88.8671,         0},
-//   {0,         0,         0,         1},
-//   {0,   -0.2941,  246.6926,         0}
-//};
+//Specify the links and initial tuning parameters
+PID xPID(&CurrentAngleX, &OutputX, &DesiredAngleX, Kp_x, Ki_x, Kd_x, DIRECT);
+PID yPID(&CurrentAngleY, &OutputY, &DesiredAngleY, Kp_y, Ki_y, Kd_y, DIRECT);
 
-// m=7.7 b=1
-//double A[4][4] = {
-//   {0,         1,         0,         0},
-//   {0,   -1.1765,   88.8671,         0},
-//   {0,         0,         0,         1},
-//   {0,   -2.9412,  246.6926,         0}
-//};
-
-// m=8
-double A[4][4] = {
-   {0,         1,         0,         0},
-   {0,   -0.0450,    9.7195,         0},
-   {0,         0,         0,         1},
-   {0,   -0.0708,   30.7206,         0}
-};
-
-double B[4][1]={
-  {      0},
-  { 0.2249},
-  {      0},
-  { 0.3538}
-};
-
-//double B[4][1]={
-//  {      0},
-//  { 1.1765},
-//  {      0},
-//  { 3.9216}
-//};
-
-double C[1][4]={
-  {0, 0, 1, 0}
-};
-
-double D[1][1]={
-  {0}
-};
-
-long double Setpoints[4][1]={
-  {0},
-  {0},
-  {0},
-  {0}
-};
-
-long double Inputs[4][1]={
-  {0},
-  {0},
-  {0},
-  {0}
-};
-
-long double Outputs[4][1]={
-  {0},
-  {0},
-  {0},
-  {0}
-};
-
-long double xAngle, yAngle, zAngle, AVx, AVy;
-long double OutputX, OutputY, OutputZ, currentOutputX, currentOutputY;
-
-SSC xSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
-SSC ySSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
-// SSC zSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
+long double xAngle, yAngle;
+long double currentOutputX, currentOutputY;
 
 bool printFlag = false;
 
@@ -423,9 +357,6 @@ void readIMU(){
     yAngle=(long double)roll;
     // zAngle=yaw;
 
-    AVx=gy/(180/PI);
-    AVy=gx/(180/PI);
-    
     //    Serial.print("Yaw, Pitch, Roll: ");
     Serial.print("Yaw = "); Serial.print(yaw, 2); Serial.print(", ");
     Serial.print("Pitch = "); Serial.print(pitch, 2); Serial.print(", ");
@@ -857,26 +788,31 @@ void updateMotors(long stepHz1, long stepHz2, long stepHz3){
 
 void speedCalculations(long double Vx, long double Vy){
   // calculate individual motor speeds
-  // long double accel1 = -sqrt(2)*((0.3333*ax)+((-0.5774)*ay));
-  // long double accel2 = -sqrt(2)*((0.3333*ax)+((0.5774)*ay));
-  // long double accel3 = -sqrt(2)*((-0.6667*ax));
+  // long double accel1 = sqrt(2)*((0.3333*x)+((-0.5774)*y));
+  // long double accel2 = sqrt(2)*((0.3333*x)+((0.5774)*y));
+  // long double accel3 = sqrt(2)*((-0.6667*x));
 
-  //speed1 = -(0.7071)*((.3333*Vx)+(-0.5774*Vy));
-  //speed2 = -(0.7071)*((.3333*Vx)+(0.5774*Vy));
-  //speed3 = -(0.7071)*(-.6666*Vx);
+//speed1 = -(0.7071)*((-0.6667*x)+((-2/sqrt(3))*y));
+//speed2 = -(0.7071)*((0.6667*x)+((2/sqrt(3))*y));
+//speed3 = -(0.7071)*((-1.3333*x)+Vz);
 
-  speed1 = (5*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
-  speed2 = (5*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
-  speed3 = (5*0.7071)*Vx;
+//speed1 = -(0.7071)*((x)+((-2/sqrt(3))*y));
+//speed2 = -(0.7071)*((x)+((2/sqrt(3))*y));
+//speed3 = -(0.7071)*((-2*x));
+
+  speed1 = -(5*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
+  speed2 = -(5*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
+  speed3 = -(5*0.7071)*Vx;
 
   // conversion from m/sto steps/s
   speed1*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
   speed2*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
   speed3*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
+}
 
-  // speed1+=accel1*Ts;
-  // speed2+=accel2*Ts;
-  // speed3+=accel3*Ts;
+void setupPID(){
+  xPID.SetMode(AUTOMATIC);
+  yPID.SetMode(AUTOMATIC);
 }
 
 void setup(){
@@ -888,9 +824,7 @@ void setup(){
   digitalWrite(Pin, LOW);
 
   setupIMU();
-  xSSC.setSSC();
-  ySSC.setSSC();
-//  zSSC.setSSC();
+  setupPID();
   setupStepper();
   timerstart = micros();
 }
@@ -902,18 +836,23 @@ void loop(){
     startMotors = 1;
   }
   else if (startMotors==1){
-    OutputX = xSSC.update(xAngle,Theta,AVx,Theta_dot,X_dot);
-    OutputY = ySSC.update(yAngle,Theta,AVy,Theta_dot,X_dot);
+    CurrentAngleX = (double)xAngle;
+    CurrentAngleY = (double)yAngle;
+    xPID.Compute();
+    yPID.Compute();
     // OutputZ = zLQR.update(zAngle,Theta,X_dot);
     if (OutputX != currentOutputX || OutputY != currentOutputY){
-      speedCalculations(OutputX, OutputY);
+      timer = micros() - timerstart;
+      if (timer >= Ts*1000000){
+        speedCalculations(OutputX, OutputY);
+      }
+      timerstart = micros();
+
       updateMotors((long)speed1, (long)speed2, (long)speed3);
       currentOutputX = OutputX;
       currentOutputY = OutputY;
     }
   }
-  timerstart = micros();
-  timer = micros() - timerstart;
 
 
   if (printFlag == true){
@@ -921,8 +860,8 @@ void loop(){
     Serial.print(" X-speed: "); Serial.println((double)OutputX);
     Serial.print("Y-angle: "); Serial.print(180*(double)yAngle/PI);
     Serial.print(" Y-speed: "); Serial.println((double)OutputY);
-    Serial.print("X-angular velocity: "); Serial.println(gy);
-    Serial.print("Y-angular velocity: "); Serial.println(gx);
+    // Serial.print("Z-angle: "); Serial.print(180*zAngle/PI);
+    // Serial.print(" Z-speed: "); Serial.println(OutputZ);
 
     Serial.print("Motor 1 Speed: "); Serial.println((long)speed1);
     Serial.print("Motor 2 Speed: "); Serial.println((long)speed2);

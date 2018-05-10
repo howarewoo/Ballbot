@@ -50,7 +50,7 @@ The scalar <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cfrac%7B
 To solve for the motor speeds, the inverse of the 3x3 matrix was found. When arranged to solve for the desired motor speeds, the equations look as follows:
 
 <p align="center">
-<img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdpi%7B150%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%20%3D%20sin%2845%5E%7B%5Ccirc%7D%29%20%5Cbegin%7Bbmatrix%7D%202-%5Csqrt%7B3%7D%20%26%20-1%20%26%202-%5Csqrt%7B3%7D%5C%5C%202-%5Csqrt%7B3%7D%20%26%201%20%26%202-%5Csqrt%7B3%7D%5C%5C%20-2*%282-%5Csqrt%7B3%7D%29%20%26%200%20%26%20%5Csqrt%7B3%7D*%282-%5Csqrt%7B3%7D%29%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_x%5C%5C%20V_y%5C%5C%20V_z%5C%5C%20%5Cend%7Bbmatrix%7D"/img>
+<img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdpi%7B150%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%20%3D%20%5Cfrac%7B%5Csqrt%7B2%7D%7D%7B2%7D%20%5Cbegin%7Bbmatrix%7D%202-%5Csqrt%7B3%7D%20%26%20-1%20%26%202-%5Csqrt%7B3%7D%5C%5C%202-%5Csqrt%7B3%7D%20%26%201%20%26%202-%5Csqrt%7B3%7D%5C%5C%20-2*%282-%5Csqrt%7B3%7D%29%20%26%200%20%26%20%5Csqrt%7B3%7D*%282-%5Csqrt%7B3%7D%29%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_x%5C%5C%20V_y%5C%5C%20V_z%5C%5C%20%5Cend%7Bbmatrix%7D"/img>
 </p>
 
 These equations can be used to calculate the desired speed of each motor in m/s, which can then be converted to steps/s based on the length of each step. The steps/s is the frequency at which pulses will be sent to the motor drivers.

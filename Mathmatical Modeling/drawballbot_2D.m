@@ -24,7 +24,7 @@ pyx = x - L*cos(thx);
 pxy = xy + L*sin(thy);
 pyy = y - L*cos(thy);
 
-subplot(5,1,1)
+subplot(2,1,1)
 plot([-10 10],[0 0],'w','LineWidth',2)
 hold on
 rectangle('Position',[xx-W/2,x-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
@@ -42,8 +42,8 @@ set(gcf,'InvertHardcopy','off')
 % box off
 drawnow
 hold off
-
-subplot(5,1,2)
+% 
+subplot(2,1,2)
 plot([-10 10],[0 0],'w','LineWidth',2)
 hold on
 rectangle('Position',[xy-W/2,y-H/2,W,H],'Curvature',1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
@@ -60,38 +60,38 @@ set(gca,'Color','k','XColor','w','YColor','w')
 set(gcf,'Color','k')
 set(gcf,'InvertHardcopy','off')   
 
-% box off
+box off
 drawnow
 hold off
 
-subplot(5,1,3);
-plot(tspan,motor(:,1));
-title('Motor Velocities with State-Feedback Control and Noise')
-ylim([-1 1]);
-xlim([0 t]);
-grid on
-set(gca,'Color','k','XColor','w','YColor','w')
-set(gcf,'Color','k')
-set(gcf,'InvertHardcopy','off') 
-
-subplot(5,1,4);
-plot(tspan,motor(:,2));
-ylim([-1 1]);
-xlim([0 t]);
-grid on
-set(gca,'Color','k','XColor','w','YColor','w')
-set(gcf,'Color','k')
-set(gcf,'InvertHardcopy','off') 
-
-subplot(5,1,5);
-plot(tspan,motor(:,3));
-ylim([-1 1]);
-xlim([0 t]);
-grid on
-set(gca,'Color','k','XColor','w','YColor','w')
-set(gcf,'Color','k')
-set(gcf,'InvertHardcopy','off') 
-
-set(gcf,'Position',[0 700 700 900])
-drawnow
-hold off
+% subplot(5,1,3);
+% plot(tspan,motor(:,1));
+% title('Motor Velocities with State-Feedback Control and Noise')
+% ylim([-1 1]);
+% xlim([0 t]);
+% grid on
+% set(gca,'Color','k','XColor','w','YColor','w')
+% set(gcf,'Color','k')
+% set(gcf,'InvertHardcopy','off') 
+% 
+% subplot(5,1,4);
+% plot(tspan,motor(:,2));
+% ylim([-1 1]);
+% xlim([0 t]);
+% grid on
+% set(gca,'Color','k','XColor','w','YColor','w')
+% set(gcf,'Color','k')
+% set(gcf,'InvertHardcopy','off') 
+% 
+% subplot(5,1,5);
+% plot(tspan,motor(:,3));
+% ylim([-1 1]);
+% xlim([0 t]);
+% grid on
+% set(gca,'Color','k','XColor','w','YColor','w')
+% set(gcf,'Color','k')
+% set(gcf,'InvertHardcopy','off') 
+% 
+set(gcf,'Position',[0 1100 1100 700])
+% drawnow
+% hold off
