@@ -52,7 +52,7 @@ double A[4][4] = {
    {0,         1,         0,         0},
    {0,   -0.0450,    9.7195,         0},
    {0,         0,         0,         1},
-   {0,   -0.0708,   30.7206,         0}
+   {0,   -0.0708,   60.7206,         0}
 };
 
 double B[4][1]={
@@ -865,9 +865,9 @@ void speedCalculations(long double Vx, long double Vy){
   //speed2 = -(0.7071)*((.3333*Vx)+(0.5774*Vy));
   //speed3 = -(0.7071)*(-.6666*Vx);
 
-  speed1 = (5*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
-  speed2 = (5*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
-  speed3 = (5*0.7071)*Vx;
+  speed1 = (2*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
+  speed2 = (2*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
+  speed3 = (2*0.7071)*Vx;
 
   // conversion from m/sto steps/s
   speed1*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);
