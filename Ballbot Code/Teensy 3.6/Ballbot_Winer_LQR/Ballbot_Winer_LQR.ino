@@ -26,7 +26,7 @@
 #define Theta_dot 3
 
 // Gains calculated in Matlab
-double K[4] = {-19.1493,  -78.8363,  731.4712,  255.0344}; // Ts = .01
+double K[4] = {-3.1534,  -11.1431,  418.2550,   36.6484}; // Ts = .01
 //double K[4] = {-3.8233,  -11.6122,  157.3357,   15.1280}; // Ts = .05
 //double K[4] = {-6.6584,  -71.0167,  429.0208,   53.3783}; // Ts = .005
 
@@ -50,16 +50,16 @@ long double Ts = 0.01;  // seconds
 // m=8
 double A[4][4] = {
    {0,         1,         0,         0},
-   {0,   -0.0450,    9.7195,         0},
+   {0,   -0.0799,   53.3002,         0},
    {0,         0,         0,         1},
-   {0,   -0.0708,   60.7206,         0}
+   {0,   -0.3773,  595.9257,         0}
 };
 
 double B[4][1]={
   {      0},
-  { 0.2249},
+  { 0.7992},
   {      0},
-  { 0.3538}
+  { 3.7731}
 };
 
 //double B[4][1]={
@@ -100,6 +100,7 @@ long double Outputs[4][1]={
 
 long double xAngle, yAngle, zAngle, AVx, AVy;
 long double OutputX, OutputY, OutputZ, currentOutputX, currentOutputY;
+long currentSpeed1, currentSpeed2, currentSpeed3;
 
 SSC xSSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
 SSC ySSC(A, B, K, Ts, Setpoints, Inputs, Outputs);
@@ -135,8 +136,6 @@ int RPM = 0;
 int startMotors=0;
 long double speed1, speed2, speed3;
 long double timer = 0, timerstart, timerend;
-int currentSpeed1, currentSpeed2, currentSpeed3;
-
 
 // -----------------------------------------------------------------------------
 #define XGOFFS_TC        0x00 // Bit 7 PWR_MODE, bits 6:1 XG_OFFS_TC, bit 0 OTP_BNK_VLD
@@ -823,13 +822,17 @@ void setupStepper(){  // Set a PWM signal to the step pins with 50% duty cycle
 
 void updateMotors(long stepHz1, long stepHz2, long stepHz3){
 
-  if(abs(stepHz1) >= MAXSPEED || abs(stepHz2) >= MAXSPEED || abs(stepHz3) >= MAXSPEED){
-    return;
-  }
+//  if(abs(stepHz1) >= MAXSPEED || abs(stepHz2) >= MAXSPEED || abs(stepHz3) >= MAXSPEED){
+//    return;
+//  }
 
-  analogWriteFrequency(STEP1, abs(stepHz1)); // pins 2, 7, 8, 14, 35, 36, 37, 38 also change
-  analogWriteFrequency(STEP2, abs(stepHz2)); // pins 3, 4 also change
-  analogWriteFrequency(STEP3, abs(stepHz3)); // pins 5, 6, 9, 10, 20, 21, 22, 23 also change
+  currentSpeed1 = currentSpeed1+((stepHz1-currentSpeed1)/2);
+  currentSpeed2 = currentSpeed2+((stepHz2-currentSpeed2)/2);
+  currentSpeed3 = currentSpeed3+((stepHz3-currentSpeed3)/2);
+
+  analogWriteFrequency(STEP1, abs(currentSpeed1)); // pins 2, 7, 8, 14, 35, 36, 37, 38 also change
+  analogWriteFrequency(STEP2, abs(currentSpeed2)); // pins 3, 4 also change
+  analogWriteFrequency(STEP3, abs(currentSpeed3)); // pins 5, 6, 9, 10, 20, 21, 22, 23 also change
 
 
   if (stepHz1 < 0){
@@ -865,9 +868,9 @@ void speedCalculations(long double Vx, long double Vy){
   //speed2 = -(0.7071)*((.3333*Vx)+(0.5774*Vy));
   //speed3 = -(0.7071)*(-.6666*Vx);
 
-  speed1 = (2*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
-  speed2 = (2*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
-  speed3 = (2*0.7071)*Vx;
+  speed1 = (3*0.7071)*((-0.5)*Vx+((sqrt(3)/2)*Vy));
+  speed2 = (3*0.7071)*((-0.5)*Vx-((sqrt(3)/2)*Vy));
+  speed3 = (3*0.7071)*Vx;
 
   // conversion from m/sto steps/s
   speed1*=(STEPS_PER_ROTATION/METERS_PER_ROTATION);

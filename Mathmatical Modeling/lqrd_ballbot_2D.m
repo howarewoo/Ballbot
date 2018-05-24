@@ -3,19 +3,19 @@
 
 clear all; close all; clc;
 
-m = 8;        % mass of chassis (kg)
+m = 7.2;        % mass of chassis (kg)
 M = .85;        % mass of ball (kg)
-b = .2;
-l = .35;         % length to center mass of chassis (m)
+b = .1;
+l = .2;         % length to center mass of chassis (m)
 g = -9.81;      % gravity (m/s)
 d = 2;          % damping factor
-I = .8;
+I = M*l*b;
 start = 0;      % x-axis initial location (m)
 dest = 0;       % x-axis destination (m)
-pushx = 0%rand(1)*(pi/4)-rand(1)*(pi/4);   % initial angle from verticle (rads)
-pushy = 0%rand(1)*(pi/4)-rand(1)*(pi/4);   % initial angle from verticle (rads)
+pushx = .1%rand(1)*(pi/4)-rand(1)*(pi/4);   % initial angle from verticle (rads)
+pushy = .1%rand(1)*(pi/4)-rand(1)*(pi/4);   % initial angle from verticle (rads)
 r=0;
-noise=1;    % add noise if 1
+noise=0;    % add noise if 1
 
 t=10;                 % Simulation Duration (seconds)
 Ts=0.01;          % Sampling Interval (seconds)
@@ -28,7 +28,7 @@ p = I*(M+m)+M*m*l^2; %denominator for the A and B matrices
 A = [0      1              0           0;
      0 -(I+m*l^2)*b/p  (m^2*-g*l^2)/p   0;
      0      0              0           1;
-     0 -2*(m*l*b)/p       2*m*-g*l*(M+m)/p  0]
+     0 -(m*l*b)/p    2*m*-g*l*(M+m)/p  0]
 
 B = [     0;
      (I+m*l^2)/p;
