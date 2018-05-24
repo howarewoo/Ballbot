@@ -39,19 +39,19 @@ These state space equations are used to produce a state space controller, where 
 These velocities can be plugged into a set of kinematic equations that calculate the required speed of each motor. The motor speeds much sum all torques around the Z axis to 0 for our system. These equations can be represented as such:
 
 <p align="center">
-<img src="https://writelatex.s3.amazonaws.com/gycxhjsycnzn/uploads/769/24376609/1.jpeg?X-Amz-Expires=14400&X-Amz-Date=20180524T172901Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJF667VKUK4OW3LCA/20180524/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=6f998fc774757c666594070296e4b0f542cabe1caad68d747936a30005ca28d2"/img>
+<img src="https://writelatex.s3.amazonaws.com/gycxhjsycnzn/uploads/769/24376609/1.jpeg?X-Amz-Expires=14400&X-Amz-Date=20180524T172901Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJF667VKUK4OW3LCA/20180524/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=6f998fc774757c666594070296e4b0f542cabe1caad68d747936a30005ca28d2">
 </p>
 
 <p align="center">
-<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B300%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%3D%20%5Csin%28%5Ctheta%29%20%5Cbegin%7Bbmatrix%7D%201%20%26%200%5C%5C%20%5Ccos%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B2X%7D%7D%7BR_%7B2Y%7D%7D%29%29%20%26%20%5Csin%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B2X%7D%7D%7BR_%7B2Y%7D%7D%29%29%20%5C%5C%20%5Ccos%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B3X%7D%7D%7BR_%7B3Y%7D%7D%29%29%20%26%20%5Csin%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B3X%7D%7D%7BR_%7B3Y%7D%7D%29%29%20%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_y%5C%5C%20V_x%5C%5C%5Cend%7Bbmatrix%7D"/img>
+<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%3D%20%5Csin%28%5Ctheta%29%20%5Cbegin%7Bbmatrix%7D%201%20%26%200%5C%5C%20%5Ccos%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B2X%7D%7D%7BR_%7B2Y%7D%7D%29%29%20%26%20%5Csin%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B2X%7D%7D%7BR_%7B2Y%7D%7D%29%29%20%5C%5C%20%5Ccos%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B3X%7D%7D%7BR_%7B3Y%7D%7D%29%29%20%26%20%5Csin%28%5Cfrac%7B%5Cpi%7D%7B2%7D-%5Carctan%28%5Cfrac%7BR_%7B3X%7D%7D%7BR_%7B3Y%7D%7D%29%29%20%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_y%5C%5C%20V_x%5C%5C%5Cend%7Bbmatrix%7D">
 </p>
 
-The scalar <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cfrac%7B1%7D%7Bsin%2845%5E%7B%5Ccirc%7D%29%7D"/> accounts for the angle of the wheels relative the the center of the ball. This shifts the resultant velocity to the top surface of the ball.
+The scalar <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdpi%7B150%7D%20%5Csin%28%5Ctheta%29"/> accounts for the angle of the wheels relative the the center of the ball. This shifts the resultant velocity to the top surface of the ball.
 
 To solve for the motor speeds, the inverse of the 3x3 matrix was found. When arranged to solve for the desired motor speeds, the equations look as follows:
 
 <p align="center">
-<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B300%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%3D%20%5Csin%2845%5E%7B%5Ccirc%7D%29%20%5Cbegin%7Bbmatrix%7D%201%20%26%200%5C%5C%20%5Ccos%2860%5E%7B%5Ccirc%7D%29%20%26%20%5Csin%2860%5E%7B%5Ccirc%7D%29%20%5C%5C%20%5Ccos%2860%5E%7B%5Ccirc%7D%29%20%26%20%5Csin%2860%5E%7B%5Ccirc%7D%29%20%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_y%5C%5C%20V_x%5C%5C%5Cend%7Bbmatrix%7D"/img>
+<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbegin%7Bbmatrix%7D%20M_1%5C%5C%20M_2%5C%5C%20M_3%5C%5C%20%5Cend%7Bbmatrix%7D%3D%20%5Csin%2845%5E%7B%5Ccirc%7D%29%20%5Cbegin%7Bbmatrix%7D%201%20%26%200%5C%5C%20%5Ccos%2860%5E%7B%5Ccirc%7D%29%20%26%20%5Csin%2860%5E%7B%5Ccirc%7D%29%20%5C%5C%20%5Ccos%2860%5E%7B%5Ccirc%7D%29%20%26%20%5Csin%2860%5E%7B%5Ccirc%7D%29%20%5C%5C%20%5Cend%7Bbmatrix%7D%20%5Cbegin%7Bbmatrix%7D%20V_y%5C%5C%20V_x%5C%5C%5Cend%7Bbmatrix%7D">
 </p>
 
 These equations can be used to calculate the desired speed of each motor in m/s, which can then be converted to steps/s based on the length of each step. The steps/s is the frequency at which pulses will be sent to the motor drivers.
