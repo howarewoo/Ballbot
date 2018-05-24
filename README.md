@@ -1,7 +1,5 @@
  # Ballbot: a Dynamically Stable Omnidirectional Robot
 
-*Under Construction*
-
 A ballbot is a dynamically-stable mobile robot designed to balance on a single spherical wheel (i.e., a ball). Through its single contact point with the ground, a ballbot is omnidirectional and thus exceptionally agile, maneuverable and organic in motion compared to other ground vehicles. Its dynamic stability enables improved navigability in narrow, crowded and dynamic environments.
 
 The ballbot works on the same principle as that of an inverted pendulum. As such, the ballbot can be broken down into three major components: The pendulum, the control system, and the drive unit. The pendulum component, and therefore the control system, can further be broken down from a single three dimensional coordinate system to pair of two dimensional coordinate systems.
